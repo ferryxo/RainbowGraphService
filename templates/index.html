@@ -15,10 +15,15 @@
 
 <center><h1 id="title"></h1></center>
 <script>
-readJSON();
-window.onresize = visualizeGraph;
-</script>
 
+jsonData = JSON.parse({{ json_data|tojson|safe }})
+metadata = jsonData[0].metadata;
+
+init();
+visualizeGraph();
+window.onresize = visualizeGraph;
+
+</script>
 
 </body>
 
