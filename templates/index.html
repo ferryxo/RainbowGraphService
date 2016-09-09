@@ -3,25 +3,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
-    <script src="http://localhost:5000/static/d3.min.js"></script>
-    <script src="http://localhost:5000/static/readJSON.js"></script>
-    <script src="http://localhost:5000/static/visualizeGraph.js"></script>
-    <script src="http://localhost:5000/static/colorPalette.js"></script>
+    <script src="../static/d3.min.js"></script>
+    <script src="../static/readJSON.js"></script>
+    <script src="../static/visualizeGraph.js"></script>
+    <script src="../static/colorPalette.js"></script>
 
     <link rel="stylesheet" href="../static/style.css"></link>
     <link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css"></link>
 </head>
 <body>
-<center><h1 id="title"></h1></center>
+<!--<center><h3 id="title"></h3></center>-->
 <script>
-
 jsonData = JSON.parse({{ json_data|tojson|safe }})
 metadata = jsonData[0].metadata;
-
 init();
 visualizeGraph();
 window.onresize = visualizeGraph;
-
 </script>
 
 </body>
