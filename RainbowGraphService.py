@@ -8,16 +8,36 @@ CORS(app)
 
 configTable = {}
 
+
+
 @app.route('/configure', methods=['POST'])
 @cross_origin()
 def index():
+    try:
+        with open('configTable.json', 'r') as f:
+            configTable = json.load(f)
+    # if the file is empty the ValueError will be thrown
+    except ValueError:
+        configTable = {}
+
     id = uuid.uuid4();
     configTable[id.urn[9:]] = request.json
+
+    with open('configTable.json', 'w+') as f:
+        json.dump(configTable, f)
+
     return jsonify(id=id)
 
 @app.route('/vis/<id>', methods=['GET'])
 
 def visualize(id):
+ # load from file:
+ try:
+   with open('configTable.json', 'r') as f:
+       configTable = json.load(f)
+    # if the file is empty the ValueError will be thrown
+ except ValueError:
+   configTable = {}
  config = configTable[id]
  return render_template('index.html', json_data = json.dumps(config))
 
