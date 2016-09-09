@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>GETTING STARTED WITH RainbowGraph</title>
+    </head>
+    <body>
+        <script>
+            function submitform(){
+                console.log("Sending Json");
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4) {
+                       resp = JSON.parse(xhr.responseText);
+                       document.getElementById('response_url').innerHTML = 'Your Rainbow Graph can be accessed through this url: <a href="' + resp.url +'" >' + resp.url + '</a>'
+                    }
+                }
+                xhr.open(input_form.method, input_form.action, true);
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send(document.getElementById("json_config").value);
+            }
+        </script>
+        
+        <p><div id="response_url"></div></p>
+    
+        <form action="http://peerlogic.csc.ncsu.edu/rainbowgraph/configure" method="POST" name="input_form">
+            <p><label>See this documentation for the correct format of the configuration file:</label>
+            <a href="https://www.peerlogic.org/visualization-rainbowgraph/">Rainbow Graph Documentation</a></p>            
+            <p><label for="JSON Configuration">Enter JSON Configuration for the RainbowGraph:</label></p>            
+            <p><textarea rows="50" cols="160"  name="json config" id="json_config"></textarea></p>
+            <p><button type="button"  onclick="submitform()">Get url to my rainbow graph!</button></p>
+        </form>        
+        <div></div>
+    </body>
+</html>
