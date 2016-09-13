@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>GETTING STARTED WITH RainbowGraph</title>
-        <link rel="stylesheet" href="../static/style.css">
+        <link rel="stylesheet" href="static/style.css">
     </head>
     <body>
         <script>
@@ -14,22 +14,22 @@
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
                        resp = JSON.parse(xhr.responseText);
-                       document.getElementById('response_url').innerHTML = 'Your Rainbow Graph can be accessed through this url: <a href="' + resp.url +'" >' + resp.url + '</a>'
+                       document.getElementById('response_url').innerHTML = 'Your Rainbow Graph can be accessed through this url: <a href="' + resp.url +'" target="_blank" >' + resp.url + '</a>'
                     }
                 }
                 xhr.open(input_form.method, input_form.action, true);
                 xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
                 xhr.send(document.getElementById("json_config").value);
-            }
+        }
         </script>
-        
-        <p><div id="response_url"></div></p>
+                
         <form class="form-container" action="http://peerlogic.csc.ncsu.edu/rainbowgraph/configure" method="POST" name="input_form">
             <div class="form-title"><h2>The Rainbow Graph</h2></div>           
             <div class="form-title">Enter a JSON Configuration for your Rainbow Graph</div>
             <div class="form-title">(See <a target="_blank" href="https://www.peerlogic.org/visualization-rainbowgraph/">this documentation</a> to learn how the configuration file should be formatted, or check the example below)</div>
             <p><textarea rows="50" cols="160"  name="json config" id="json_config" class="form-field"></textarea></p>
-            <p><button type="button"  class="submit-button" onclick="submitform()">Get url to my rainbow graph!</button></p>
+            <p><button type="button"  class="submit-button" onclick="submitform()">Go get the url to my rainbow graph!</button></p>
+            <p><div id="response_url"></div></p>
         </form>
         &nbsp;
         <div class="form-container">
