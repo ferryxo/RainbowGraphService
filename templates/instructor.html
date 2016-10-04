@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <link rel="stylesheet" type="text/css" href="static/basic.css">
+    <link rel="stylesheet" type="text/css" href="static/dropzone.css">
+    <script src="static/dropzone.js"></script>
+</head>
+<body>
+
+<h1>The Rainbow Graph</h1>
+<p>
+<p>
+    The Rainbow Graph helps you to visualize peer assessment scores of your class and identify submissions that are scored with high disagreements by their reviewers.
+    This graph is simply a bar graph. Each student is represented by a column, and the height of the column is determined by that student’s “primary-value” entry.
+    Think of “primary-value” as their overall aggregate score. This isn’t calculated by the web service but rather is provided by you.
+
+    Each of these columns consists of a number of smaller elements stacked together. These elements refer to the individual scores that student received from other peers in a peer review session.
+    Some students may have more “values” than other students and that’s OK. The overall column height will always be drawn such that its height corresponds to the “primary-value” provided by you.
+
+    more
+</p>
+
+<img src="">
+
+
+<form action="/file-upload" class="dropzone form-container" id="uploader" >
+  <div class="fallback">
+    <input name="file" type="file" multiple />
+  </div>
+</form>
+
+</body>
+</html>

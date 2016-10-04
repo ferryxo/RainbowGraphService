@@ -2,11 +2,45 @@ from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS, cross_origin
 import uuid
 import json
+import magic
+import xlrd
+import openpyxl
 
 app = Flask(__name__)
 CORS(app)
 
 configTable = {}
+
+
+@app.route('/file-upload', methods=['POST'])
+@cross_origin()
+def file_upload():
+    file = request.files['file']
+
+    #check type of the files, find a way to check the header
+    if file.filename.endswith(".csv"):
+        print("handle csv")
+
+    elif file.filename.endswith(".xls"):
+        print("handle .xsl")
+        book = xlrd.open_workbook(file_contents=file.read())
+
+        
+
+    elif file.filename.endswith(".xlsx"):
+        print("handle .xlsx")
+
+
+
+
+
+
+
+@app.route('/instructor', methods=['GET'])
+@cross_origin()
+def instructor():
+    #check type of the files
+    return render_template('instructor.html')
 
 @app.route('/configure', methods=['GET', 'POST'])
 @cross_origin()
