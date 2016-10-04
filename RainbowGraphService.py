@@ -25,7 +25,7 @@ def file_upload():
         print("handle .xsl")
         book = xlrd.open_workbook(file_contents=file.read())
 
-        
+
 
     elif file.filename.endswith(".xlsx"):
         print("handle .xlsx")
