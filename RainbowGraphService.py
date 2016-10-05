@@ -1,8 +1,8 @@
 from flask import Flask, request, render_template, jsonify
+from flask.ext.api import status
 from flask_cors import CORS, cross_origin
 import uuid
 import json
-import magic
 import xlrd
 import openpyxl
 
@@ -24,7 +24,31 @@ def file_upload():
     elif file.filename.endswith(".xls"):
         print("handle .xsl")
         book = xlrd.open_workbook(file_contents=file.read())
+        data_sheet = book.sheet_by_index(0)
+        cell00 = data_sheet.cell(0,0)  # 1st row
 
+        if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
+            #handle sword data
+            review_scores={}
+
+            for row in range(5, data_sheet.nrows):
+
+                individual_score=review_scores.get(data_sheet.cell(row,0).value)
+                if individual_score == None :
+                    individual_score = {}
+
+                divider = 0
+                score_sum = 0
+                for col in range(2, data_sheet.ncols):
+                    if not data_sheet.cell(row, col).value == '':
+                        score_sum += float(data_sheet.cell(row, col).value)
+                        divider += 1
+
+                individual_score[data_sheet.cell(row, 1).value] = score_sum / float(divider)
+
+                review_scores[data_sheet.cell(row, 0).value] = individual_score
+
+        return jsonify(review_scores=review_scores), status.HTTP_200_OK
 
 
     elif file.filename.endswith(".xlsx"):
