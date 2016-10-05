@@ -5,6 +5,7 @@ import uuid
 import json
 import xlrd
 import openpyxl
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +16,7 @@ configTable = {}
 @app.route('/file-upload', methods=['POST'])
 @cross_origin()
 def file_upload():
+
     file = request.files['file']
 
     #check type of the files, find a way to check the header
@@ -29,14 +31,21 @@ def file_upload():
 
         if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
             #handle sword data
-            review_scores={}
 
+            authors_scores={}
+            list_of_author = []
+
+            prev_author = None
+            current_author_scores = []
+            peer_given_holistic_score = {}
             for row in range(5, data_sheet.nrows):
+                author = data_sheet.cell(row,0).value
+                reviewer = data_sheet.cell(row,1).value
 
-                individual_score=review_scores.get(data_sheet.cell(row,0).value)
-                if individual_score == None :
-                    individual_score = {}
+                if authors_scores.get(author) == None :
+                    authors_scores[author] = {}
 
+                #average scores all dimensions
                 divider = 0
                 score_sum = 0
                 for col in range(2, data_sheet.ncols):
@@ -44,11 +53,42 @@ def file_upload():
                         score_sum += float(data_sheet.cell(row, col).value)
                         divider += 1
 
-                individual_score[data_sheet.cell(row, 1).value] = score_sum / float(divider)
+                authors_scores[author][reviewer] = score_sum / float(divider)
 
-                review_scores[data_sheet.cell(row, 0).value] = individual_score
+                if prev_author == author or prev_author == None:
+                    current_author_scores.append(authors_scores[author][reviewer])
+                elif prev_author != None:
+                    element_prev_author = {
+                        "first_name": prev_author,
+                        "last_name": "",
+                        "column_url": "",
+                        "primary_value": np.mean(current_author_scores),
+                        "secondary_value": np.std(current_author_scores),
+                        "values": current_author_scores
+                    }
+                    list_of_author.append(element_prev_author)
+                    current_author_scores = [authors_scores[author][reviewer]]
+                prev_author = author
 
-        return jsonify(review_scores=review_scores), status.HTTP_200_OK
+        data = sorted(list_of_author, key=lambda k: k['primary_value'])
+
+        config = {
+            "metadata": {
+                        "primary-value-label": "rate average",
+                        "higher_primary_value_better": False,
+                        "values-label": "ranks",
+                        "higher_values_better": False,
+                        "best-value-possible": 1,
+                        "worst-value-possible": 7,
+                        "y-axis-label": "Rate Average",
+                        "x-axis-label": "Students",
+                        "color-scheme": "5b",
+                        "secondary-value-label": "variance"
+                },
+                "data": data
+        }
+
+        return jsonify(config=config), status.HTTP_200_OK
 
 
     elif file.filename.endswith(".xlsx"):
