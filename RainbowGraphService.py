@@ -37,21 +37,24 @@ def file_upload():
         current_author_scores = []
         list_of_author_json_conf = []
 
-        for row in range(3, len(cpr_data)):
+        for row in range(1, len(cpr_data)):
             author_id = cpr_data[row][0]
             author_name = cpr_data[row][2]
             reviewer = cpr_data[row][4]
             cpi = cpr_data[row][5]
-            current_score = cpr_data[row][len(cpr_data[row]-1)]
+            current_score = cpr_data[row][len(cpr_data[row])-2]
+
+            if reviewer == '':
+                continue
 
             if author_id == prev_author or prev_author == None:
                 #add this reviewer and the score to this author
-                current_author_scores.append(current_score)
+                current_author_scores.append(float(current_score))
             elif prev_author != None:
                 #calculate the avg score & standard dev. for this author
                 authors_scores[prev_author] = current_author_scores
 
-                if prev_author_name.includes(","):
+                if "," in prev_author_name:
                     firstname = prev_author_name.split(",")[1] if len(prev_author_name.split(","))>1 else "-"
                     lastname = prev_author_name.split(",")[0]
                 else:
@@ -59,7 +62,7 @@ def file_upload():
                     lastname = prev_author_name.split(" ")[0]
 
                 element_prev_author = {
-                    "first_name": firstname ,
+                    "first_name": firstname,
                     "last_name": lastname,
                     "column_url": "",
                     "primary_value": np.mean(current_author_scores),
@@ -67,10 +70,9 @@ def file_upload():
                     "values": current_author_scores
                 }
                 list_of_author_json_conf.append(element_prev_author)
-                current_author_scores = [current_score]
+                current_author_scores = [float(current_score)]
             prev_author = author_id
             prev_author_name = author_name
-
 
     elif file.filename.endswith(".xls"):
         book = xlrd.open_workbook(file_contents=file.read())
@@ -118,32 +120,29 @@ def file_upload():
                     current_author_scores = [authors_scores[author][reviewer]]
                 prev_author = author
 
-        data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'])
-
-        config = {
-            "metadata": {
-                        "primary-value-label": "rate average",
-                        "higher_primary_value_better": False,
-                        "values-label": "ranks",
-                        "higher_values_better": False,
-                        "best-value-possible": 1,
-                        "worst-value-possible": 7,
-                        "y-axis-label": "Rate Average",
-                        "x-axis-label": "Students",
-                        "color-scheme": "5b",
-                        "secondary-value-label": "variance"
-                },
-                "data": data
-        }
-
-        return jsonify([config]), status.HTTP_200_OK
-
-
     elif file.filename.endswith(".xlsx"):
         print("handle .xlsx")
 
 
+    data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'])
 
+    config = {
+        "metadata": {
+                    "primary-value-label": "rate average",
+                    "higher_primary_value_better": False,
+                    "values-label": "ranks",
+                    "higher_values_better": False,
+                    "best-value-possible": 1,
+                    "worst-value-possible": 7,
+                    "y-axis-label": "Rate Average",
+                    "x-axis-label": "Students",
+                    "color-scheme": "5b",
+                    "secondary-value-label": "variance"
+            },
+            "data": data
+        }
+
+    return jsonify([config]), status.HTTP_200_OK
 
 @app.route('/instructor', methods=['GET'])
 @cross_origin()
