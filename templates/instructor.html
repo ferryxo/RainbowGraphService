@@ -9,6 +9,21 @@
     <script src="static/dropzone.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script>
+
+        function deleteUrl(url){
+            id = url.substr(url.lastIndexOf('/') + 1)
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a> <button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
+                    document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
+                }
+            }
+            xhr.open("DELETE", "/viz/" + id, true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            xhr.send();
+        }
+
         Dropzone.autoDiscover = false;
         $(function() {
           var myDropzone = new Dropzone("#uploader");
@@ -17,7 +32,8 @@
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
                        resp = JSON.parse(xhr.responseText);
-                       document.getElementById('link').innerHTML += '<li type="square"><a href="' + resp.url +'" target="_blank" >' + resp.url + '</a></li>'
+                       document.getElementById('link').innerHTML +=
+                               '<li type="square"><a href="' + resp.url +'" target="_blank" >' + resp.url + '</a> <button type="button" class="submit-button" onclick="deleteUrl(\'' + resp.url + '\')">delete</button></li>'
                     }
                 }
                 xhr.open("POST", "/configure", true);

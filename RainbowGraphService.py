@@ -95,11 +95,6 @@ def file_upload():
         print("handle .xlsx")
 
 
-
-
-
-
-
 @app.route('/instructor', methods=['GET'])
 @cross_origin()
 def instructor():
@@ -127,22 +122,30 @@ def index():
 
     return jsonify(url="http://localhost:3005/viz/" + id.urn[9:])
 
-@app.route('/viz/<id>', methods=['GET'])
+@app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
 def visualize(id):
+
  # load from file:
  try:
-   with open('configTable.json', 'r') as f:
+   with open('configTable.json', 'r+') as f:
        configTable = json.load(f)
     # if the file is empty the ValueError will be thrown
  except ValueError:
    configTable = {}
  config = configTable.get(id)
 
- if config == None:
-     return jsonify(error="Shoot.. I couldn't find the config data")
+ if request.method == 'DELETE':
+    f.close()
+    configTable.pop(id, None)
+    with open('configTable.json', 'w+') as f:
+        json.dump(configTable, f)
+    return "", status.HTTP_200_OK
  else:
-    return render_template('index.html', json_data = json.dumps(config))
+     if config == None:
+         return jsonify(error="Shoot.. I couldn't find the config data")
+     else:
+        return render_template('index.html', json_data = json.dumps(config))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3005, threaded=True)
