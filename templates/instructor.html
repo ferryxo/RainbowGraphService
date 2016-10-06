@@ -12,15 +12,24 @@
         Dropzone.autoDiscover = false;
         $(function() {
           var myDropzone = new Dropzone("#uploader");
-          myDropzone.on("success", function(response) {
-            alert(response)
+          myDropzone.on("success", function(file, response) {
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4) {
+                       resp = JSON.parse(xhr.responseText);
+                       document.getElementById('link').innerHTML += '<li type="square"><a href="' + resp.url +'" target="_blank" >' + resp.url + '</a></li>'
+                    }
+                }
+                xhr.open("POST", "/configure", true);
+                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+                xhr.send(JSON.stringify(response));
           });
         });
     </script>
 </head>
 <body>
-
-<h1>The Rainbow Graph</h1>
+<div class="form-container">
+<h1 class="form-title">The Rainbow Graph</h1>
 <p>
 <p>
     The Rainbow Graph helps you to visualize peer assessment scores of your class and identify submissions that are scored with high disagreements by their reviewers.
@@ -32,19 +41,24 @@
 
     more
 </p>
-
-<img src="">
-
+<h2 class="form-title"></h2>
 
 <form action="/file-upload" class="dropzone form-container" id="uploader" >
-  <div class="fallback">
+    <div class="dz-message" data-dz-message>
+        <span>Drop your data files here or click to open files selector</span>
+        <span>currently we support data files from the following system: CPR(.csv), Perceptive(.xls), Expertiza(.xls), ...</span>
+    </div>
+    <div class="fallback">
     <input name="file" type="file" multiple />
   </div>
 </form>
-
-<div id="link">
-
 </div>
-
+<p>
+<div class="form-container">
+    <h2 class="form-title">Your Rainbow Graph can be accessed through this URLs:</h2>
+    <ul>
+        <div id="link"></div>
+    </ul>
+</div>
 </body>
 </html>

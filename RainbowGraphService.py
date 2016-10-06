@@ -88,7 +88,7 @@ def file_upload():
                 "data": data
         }
 
-        return jsonify(config=config), status.HTTP_200_OK
+        return jsonify([config]), status.HTTP_200_OK
 
 
     elif file.filename.endswith(".xlsx"):
@@ -125,7 +125,7 @@ def index():
     with open('configTable.json', 'w+') as f:
         json.dump(configTable, f)
 
-    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    return jsonify(url="http://localhost:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET'])
 @cross_origin()
@@ -137,8 +137,12 @@ def visualize(id):
     # if the file is empty the ValueError will be thrown
  except ValueError:
    configTable = {}
- config = configTable[id]
- return render_template('index.html', json_data = json.dumps(config))
+ config = configTable.get(id)
+
+ if config == None:
+     return jsonify(error="Shoot.. I couldn't find the config data")
+ else:
+    return render_template('index.html', json_data = json.dumps(config))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3005, threaded=True)
