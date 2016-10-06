@@ -9,13 +9,16 @@
     <script src="static/dropzone.js"></script>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script>
-
+        var myDropzone
+        var files_table = {};
         function deleteUrl(url){
             id = url.substr(url.lastIndexOf('/') + 1)
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4) {
-                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a> <button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
+                    myDropzone.removeFile(files_table[id])
+                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a>'
+                    line += '<button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
                     document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
                 }
             }
@@ -26,19 +29,36 @@
 
         Dropzone.autoDiscover = false;
         $(function() {
-          var myDropzone = new Dropzone("#uploader");
-          myDropzone.on("success", function(file, response) {
+          myDropzone = new Dropzone("#uploader", {addRemoveLinks: true});
+          myDropzone.on("success", function(file, file_upload_resp) {
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
-                       resp = JSON.parse(xhr.responseText);
-                       document.getElementById('link').innerHTML +=
-                               '<li type="square"><a href="' + resp.url +'" target="_blank" >' + resp.url + '</a> <button type="button" class="submit-button" onclick="deleteUrl(\'' + resp.url + '\')">delete</button></li>'
+                       configure_resp = JSON.parse(xhr.responseText);
+                       file.id = configure_resp.url.substr(configure_resp.url.lastIndexOf('/') + 1)
+                       files_table[file.id] = file
+                       document.getElementById('link').innerHTML += '<li type="square"><a href="' + configure_resp.url +'" target="_blank" >' + configure_resp.url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + configure_resp.url + '\')">delete</button></li>'
+
                     }
                 }
                 xhr.open("POST", "/configure", true);
                 xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-                xhr.send(JSON.stringify(response));
+                xhr.send(JSON.stringify(file_upload_resp));
+          });
+
+          myDropzone.on("removedfile", function(file, resp) {
+            id = file.id
+            url =  location.protocol + '//' + location.host + "/viz/" + id
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4) {
+                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
+                    document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
+                }
+            }
+            xhr.open("DELETE", "/viz/" + id, true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            xhr.send();
           });
         });
     </script>

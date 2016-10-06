@@ -1,11 +1,12 @@
 from flask import Flask, request, render_template, jsonify
-from flask.ext.api import status
+from flask_api import status
 from flask_cors import CORS, cross_origin
 import uuid
 import json
 import xlrd
 import openpyxl
 import numpy as np
+import csv
 
 app = Flask(__name__)
 CORS(app)
@@ -22,9 +23,56 @@ def file_upload():
     #check type of the files, find a way to check the header
     if file.filename.endswith(".csv"):
         print("handle csv")
+        #assume this is CPR file, to be confirmed
+        header1 = file.readline()
+        header2 = file.readline()
+
+        reader = csv.reader(file, dialect="excel")
+
+        cpr_data = list(reader)
+
+        authors_scores = {}
+        prev_author = None
+        prev_author_name = None
+        current_author_scores = []
+        list_of_author_json_conf = []
+
+        for row in range(3, len(cpr_data)):
+            author_id = cpr_data[row][0]
+            author_name = cpr_data[row][2]
+            reviewer = cpr_data[row][4]
+            cpi = cpr_data[row][5]
+            current_score = cpr_data[row][len(cpr_data[row]-1)]
+
+            if author_id == prev_author or prev_author == None:
+                #add this reviewer and the score to this author
+                current_author_scores.append(current_score)
+            elif prev_author != None:
+                #calculate the avg score & standard dev. for this author
+                authors_scores[prev_author] = current_author_scores
+
+                if prev_author_name.includes(","):
+                    firstname = prev_author_name.split(",")[1] if len(prev_author_name.split(","))>1 else "-"
+                    lastname = prev_author_name.split(",")[0]
+                else:
+                    firstname = prev_author_name.split(" ")[1] if len(prev_author_name.split(" "))>1 else "-"
+                    lastname = prev_author_name.split(" ")[0]
+
+                element_prev_author = {
+                    "first_name": firstname ,
+                    "last_name": lastname,
+                    "column_url": "",
+                    "primary_value": np.mean(current_author_scores),
+                    "secondary_value": np.std(current_author_scores),
+                    "values": current_author_scores
+                }
+                list_of_author_json_conf.append(element_prev_author)
+                current_author_scores = [current_score]
+            prev_author = author_id
+            prev_author_name = author_name
+
 
     elif file.filename.endswith(".xls"):
-        print("handle .xsl")
         book = xlrd.open_workbook(file_contents=file.read())
         data_sheet = book.sheet_by_index(0)
         cell00 = data_sheet.cell(0,0)  # 1st row
@@ -33,7 +81,7 @@ def file_upload():
             #handle sword data
 
             authors_scores={}
-            list_of_author = []
+            list_of_author_json_conf = []
 
             prev_author = None
             current_author_scores = []
@@ -66,11 +114,11 @@ def file_upload():
                         "secondary_value": np.std(current_author_scores),
                         "values": current_author_scores
                     }
-                    list_of_author.append(element_prev_author)
+                    list_of_author_json_conf.append(element_prev_author)
                     current_author_scores = [authors_scores[author][reviewer]]
                 prev_author = author
 
-        data = sorted(list_of_author, key=lambda k: k['primary_value'])
+        data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'])
 
         config = {
             "metadata": {
@@ -93,6 +141,8 @@ def file_upload():
 
     elif file.filename.endswith(".xlsx"):
         print("handle .xlsx")
+
+
 
 
 @app.route('/instructor', methods=['GET'])
@@ -120,7 +170,7 @@ def index():
     with open('configTable.json', 'w+') as f:
         json.dump(configTable, f)
 
-    return jsonify(url="http://localhost:3005/viz/" + id.urn[9:])
+    return jsonify(url="http://0.0.0.0:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
@@ -146,6 +196,20 @@ def visualize(id):
          return jsonify(error="Shoot.. I couldn't find the config data")
      else:
         return render_template('index.html', json_data = json.dumps(config))
+
+
+def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
+    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
+    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
+                            dialect=dialect, **kwargs)
+    for row in csv_reader:
+        # decode UTF-8 back to Unicode, cell by cell:
+        yield [unicode(cell, 'utf-8') for cell in row]
+
+def utf_8_encoder(unicode_csv_data):
+    for line in unicode_csv_data:
+        yield line.encode('utf-8')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3005, threaded=True)
