@@ -17,8 +17,7 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4) {
                     myDropzone.removeFile(files_table[id])
-                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a>'
-                    line += '<button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
+                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
                     document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
                 }
             }
@@ -38,7 +37,6 @@
                        file.id = configure_resp.url.substr(configure_resp.url.lastIndexOf('/') + 1)
                        files_table[file.id] = file
                        document.getElementById('link').innerHTML += '<li type="square"><a href="' + configure_resp.url +'" target="_blank" >' + configure_resp.url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + configure_resp.url + '\')">delete</button></li>'
-
                     }
                 }
                 xhr.open("POST", "/configure", true);

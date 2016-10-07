@@ -26,7 +26,8 @@ def file_upload():
         #assume this is CPR file, to be confirmed
         header1 = file.readline()
         header2 = file.readline()
-
+        best = 10
+        worst = 0
         reader = csv.reader(file, dialect="excel")
 
         cpr_data = list(reader)
@@ -43,6 +44,7 @@ def file_upload():
             reviewer = cpr_data[row][4]
             cpi = cpr_data[row][5]
             current_score = cpr_data[row][len(cpr_data[row])-2]
+            primary_val = cpr_data[row][3].split("/")[0]
 
             if reviewer == '':
                 continue
@@ -65,7 +67,7 @@ def file_upload():
                     "first_name": firstname,
                     "last_name": lastname,
                     "column_url": "",
-                    "primary_value": np.mean(current_author_scores),
+                    "primary_value": float(primary_val),
                     "secondary_value": np.std(current_author_scores),
                     "values": current_author_scores
                 }
@@ -75,6 +77,8 @@ def file_upload():
             prev_author_name = author_name
 
     elif file.filename.endswith(".xls"):
+        best = 7
+        worst = 0
         book = xlrd.open_workbook(file_contents=file.read())
         data_sheet = book.sheet_by_index(0)
         cell00 = data_sheet.cell(0,0)  # 1st row
@@ -124,16 +128,16 @@ def file_upload():
         print("handle .xlsx")
 
 
-    data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'])
+    data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'], reverse=True)
 
     config = {
         "metadata": {
                     "primary-value-label": "rate average",
-                    "higher_primary_value_better": False,
+                    "higher_primary_value_better": True,
                     "values-label": "ranks",
-                    "higher_values_better": False,
-                    "best-value-possible": 1,
-                    "worst-value-possible": 7,
+                    "higher_values_better": True,
+                    "best-value-possible": best,
+                    "worst-value-possible": worst,
                     "y-axis-label": "Rate Average",
                     "x-axis-label": "Students",
                     "color-scheme": "5b",
