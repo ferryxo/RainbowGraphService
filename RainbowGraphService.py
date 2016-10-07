@@ -7,6 +7,21 @@ import xlrd
 import openpyxl
 import numpy as np
 import csv
+import logging
+
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+# first file logger
+instructor_logger = logging.getLogger('instructor_logger')
+hdlr_1 = logging.FileHandler('instructor.log')
+hdlr_1.setFormatter(formatter)
+instructor_logger.addHandler(hdlr_1)
+
+# second file logger
+debug_logger = logging.getLogger('debug_logger')
+hdlr_2 = logging.FileHandler('debug.log')
+hdlr_2.setFormatter(formatter)
+debug_logger.addHandler(hdlr_2)
 
 app = Flask(__name__)
 CORS(app)
@@ -17,75 +32,88 @@ configTable = {}
 @app.route('/file-upload', methods=['POST'])
 @cross_origin()
 def file_upload():
-
     file = request.files['file']
 
     #check type of the files, find a way to check the header
     if file.filename.endswith(".csv"):
-        print("handle csv")
-        #assume this is CPR file, to be confirmed
+        #log the headers
         header1 = file.readline()
         header2 = file.readline()
-        best = 10
-        worst = 0
-        reader = csv.reader(file, dialect="excel")
+        instructor_logger.info(header1)
+        instructor_logger.info(header2)
 
-        cpr_data = list(reader)
+        if "Assignment =" in header1 and "Time =" in header2:
+            #assume this is CPR file, to be confirmed
 
-        authors_scores = {}
-        prev_author = None
-        prev_author_name = None
-        current_author_scores = []
-        list_of_author_json_conf = []
 
-        for row in range(1, len(cpr_data)):
-            author_id = cpr_data[row][0]
-            author_name = cpr_data[row][2]
-            reviewer = cpr_data[row][4]
-            cpi = cpr_data[row][5]
-            current_score = cpr_data[row][len(cpr_data[row])-2]
-            primary_val = cpr_data[row][3].split("/")[0]
+            best = 10
+            worst = 0
+            reader = csv.reader(file, dialect="excel")
 
-            if reviewer == '':
-                continue
+            cpr_data = list(reader)
 
-            if author_id == prev_author or prev_author == None:
-                #add this reviewer and the score to this author
-                current_author_scores.append(float(current_score))
-            elif prev_author != None:
-                #calculate the avg score & standard dev. for this author
-                authors_scores[prev_author] = current_author_scores
+            authors_scores = {}
+            prev_author = None
+            prev_author_name = None
+            current_author_scores = []
+            list_of_author_json_conf = []
 
-                if "," in prev_author_name:
-                    firstname = prev_author_name.split(",")[1] if len(prev_author_name.split(","))>1 else "-"
-                    lastname = prev_author_name.split(",")[0]
-                else:
-                    firstname = prev_author_name.split(" ")[1] if len(prev_author_name.split(" "))>1 else "-"
-                    lastname = prev_author_name.split(" ")[0]
+            for row in range(1, len(cpr_data)):
+                author_id = cpr_data[row][0]
+                author_name = cpr_data[row][2]
+                reviewer = cpr_data[row][4]
+                cpi = cpr_data[row][5]
+                current_score = cpr_data[row][len(cpr_data[row])-2]
+                primary_val = cpr_data[row][3].split("/")[0]
 
-                element_prev_author = {
-                    "first_name": firstname,
-                    "last_name": lastname,
-                    "column_url": "",
-                    "primary_value": float(primary_val),
-                    "secondary_value": np.std(current_author_scores),
-                    "values": current_author_scores
-                }
-                list_of_author_json_conf.append(element_prev_author)
-                current_author_scores = [float(current_score)]
-            prev_author = author_id
-            prev_author_name = author_name
+                if reviewer == '':
+                    continue
+
+                if author_id == prev_author or prev_author == None:
+                    #add this reviewer and the score to this author
+                    current_author_scores.append(float(current_score))
+                elif prev_author != None:
+                    #calculate the avg score & standard dev. for this author
+                    authors_scores[prev_author] = current_author_scores
+
+                    if "," in prev_author_name:
+                        firstname = prev_author_name.split(",")[1] if len(prev_author_name.split(","))>1 else "-"
+                        lastname = prev_author_name.split(",")[0]
+                    else:
+                        firstname = prev_author_name.split(" ")[1] if len(prev_author_name.split(" "))>1 else "-"
+                        lastname = prev_author_name.split(" ")[0]
+
+                    element_prev_author = {
+                        "first_name": firstname,
+                        "last_name": lastname,
+                        "column_url": "",
+                        "primary_value": float(primary_val),
+                        "secondary_value": np.std(current_author_scores),
+                        "values": current_author_scores
+                    }
+                    list_of_author_json_conf.append(element_prev_author)
+                    current_author_scores = [float(current_score)]
+                prev_author = author_id
+                prev_author_name = author_name
+        else:
+            debug_logger.error("someone uploaded an unsupported csv file")
 
     elif file.filename.endswith(".xls"):
         best = 7
         worst = 0
         book = xlrd.open_workbook(file_contents=file.read())
         data_sheet = book.sheet_by_index(0)
-        cell00 = data_sheet.cell(0,0)  # 1st row
+
+        #log the headers
+        header1 = data_sheet.cell(0,0)  # 1st row
+        instructor_logger.info(header1)
+        header1 = data_sheet.cell(2,0)  # 2nd row
+        instructor_logger.info(header1)
+        header1 = data_sheet.cell(2,0)  # 3rd row
+        instructor_logger.info(header1)
 
         if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
             #handle sword data
-
             authors_scores={}
             list_of_author_json_conf = []
 
@@ -123,9 +151,11 @@ def file_upload():
                     list_of_author_json_conf.append(element_prev_author)
                     current_author_scores = [authors_scores[author][reviewer]]
                 prev_author = author
+        else:
+            debug_logger.error("someone uploaded an unsupported xls file")
 
     elif file.filename.endswith(".xlsx"):
-        print("handle .xlsx")
+        debug_logger.error("someone uploaded an xlsx file")
 
 
     data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'], reverse=True)
@@ -173,7 +203,7 @@ def index():
     with open('configTable.json', 'w+') as f:
         json.dump(configTable, f)
 
-    return jsonify(url="http://0.0.0.0:3005/viz/" + id.urn[9:])
+    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()

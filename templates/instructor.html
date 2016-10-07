@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>The Rainbow Graph for Instructors </title>
     <link rel="stylesheet" type="text/css" href="static/style.css">
     <link rel="stylesheet" type="text/css" href="static/basic.css">
     <link rel="stylesheet" type="text/css" href="static/dropzone.css">
@@ -27,6 +27,7 @@
         }
 
         Dropzone.autoDiscover = false;
+
         $(function() {
           myDropzone = new Dropzone("#uploader", {addRemoveLinks: true});
           myDropzone.on("success", function(file, file_upload_resp) {
@@ -36,6 +37,9 @@
                        configure_resp = JSON.parse(xhr.responseText);
                        file.id = configure_resp.url.substr(configure_resp.url.lastIndexOf('/') + 1)
                        files_table[file.id] = file
+                       //rename file
+                       var fileuploded = file.previewElement.querySelector("[data-dz-name]");
+                       fileuploded.innerHTML = file.id + "|" + file.name
                        document.getElementById('link').innerHTML += '<li type="square"><a href="' + configure_resp.url +'" target="_blank" >' + configure_resp.url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + configure_resp.url + '\')">delete</button></li>'
                     }
                 }
@@ -58,6 +62,11 @@
             xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
             xhr.send();
           });
+
+          myDropzone.on("renameFilename", function (filename) {
+            return new Date().getTime() + '_' + filename;
+          });
+
         });
     </script>
 </head>
@@ -65,6 +74,7 @@
 <div class="form-container">
 <h1 class="form-title">The Rainbow Graph</h1>
 <p>
+    <div class="form-title">This page is intended for instructors, <a href="/configure">klick here if you are a developer</a></div>
 <p>
     The Rainbow Graph helps you to visualize peer assessment scores of your class and identify submissions that are scored with high disagreements by their reviewers.
     This graph is simply a bar graph. Each student is represented by a column, and the height of the column is determined by that student’s “primary-value” entry.
@@ -73,14 +83,14 @@
     Each of these columns consists of a number of smaller elements stacked together. These elements refer to the individual scores that student received from other peers in a peer review session.
     Some students may have more “values” than other students and that’s OK. The overall column height will always be drawn such that its height corresponds to the “primary-value” provided by you.
 
-    more
+    <a href="https://www.peerlogic.org/visualization-rainbowgraph/" target="_blank">Click here to learn more about the Rainbow Graph.</a>
 </p>
 <h2 class="form-title"></h2>
 
 <form action="/file-upload" class="dropzone form-container" id="uploader" >
     <div class="dz-message" data-dz-message>
-        <span>Drop your data files here or click to open files selector</span>
-        <span>currently we support data files from the following system: CPR(.csv), Perceptive(.xls), Expertiza(.xls), ...</span>
+        <span>Drop your data files or click here to upload</span>
+        <span>Currently we support data files from the following systems: CPR(.csv), Perceptive/Sword(.xls)</span>
     </div>
     <div class="fallback">
     <input name="file" type="file" multiple />
@@ -89,7 +99,7 @@
 </div>
 <p>
 <div class="form-container">
-    <h2 class="form-title">Your Rainbow Graph can be accessed through this URLs:</h2>
+    <h2 class="form-title">Your Rainbow Graph can be accessed through the following URLs</h2>
     <ul>
         <div id="link"></div>
     </ul>
