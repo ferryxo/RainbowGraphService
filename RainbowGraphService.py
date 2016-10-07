@@ -16,12 +16,14 @@ instructor_logger = logging.getLogger('instructor_logger')
 hdlr_1 = logging.FileHandler('instructor.log')
 hdlr_1.setFormatter(formatter)
 instructor_logger.addHandler(hdlr_1)
+instructor_logger.setLevel(logging.INFO)
 
 # second file logger
 debug_logger = logging.getLogger('debug_logger')
 hdlr_2 = logging.FileHandler('debug.log')
 hdlr_2.setFormatter(formatter)
 debug_logger.addHandler(hdlr_2)
+debug_logger.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 CORS(app)
@@ -109,7 +111,7 @@ def file_upload():
         instructor_logger.info(header1)
         header1 = data_sheet.cell(2,0)  # 2nd row
         instructor_logger.info(header1)
-        header1 = data_sheet.cell(2,0)  # 3rd row
+        header1 = data_sheet.cell(3,0)  # 3rd row
         instructor_logger.info(header1)
 
         if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
