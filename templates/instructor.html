@@ -16,12 +16,14 @@
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4) {
-                    myDropzone.removeFile(files_table[id])
-                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
-                    document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
+
                 }
             }
-            xhr.open("DELETE", "/viz/" + id, true);
+            line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
+            document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
+            myDropzone.removeFile(files_table[id])
+            
+            xhr.open("DELETE", "viz/" + id, true);
             xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
             xhr.send();
         }
@@ -43,30 +45,27 @@
                        document.getElementById('link').innerHTML += '<li type="square"><a href="' + configure_resp.url +'" target="_blank" >' + configure_resp.url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + configure_resp.url + '\')">delete</button></li>'
                     }
                 }
-                xhr.open("POST", "/configure", true);
+                xhr.open("POST", "configure", true);
                 xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
                 xhr.send(JSON.stringify(file_upload_resp));
           });
 
           myDropzone.on("removedfile", function(file, resp) {
             id = file.id
-            url =  location.protocol + '//' + location.host + "/viz/" + id
+            url =  location.protocol + '//' + location.host + "/rainbowgraph/viz/" + id
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4) {
-                    line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
-                    document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
                 }
             }
-            xhr.open("DELETE", "/viz/" + id, true);
+
+            line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
+            document.getElementById('link').innerHTML = document.getElementById('link').innerHTML.replace(line, "")
+
+            xhr.open("DELETE", "viz/" + id, true);
             xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
             xhr.send();
           });
-
-          myDropzone.on("renameFilename", function (filename) {
-            return new Date().getTime() + '_' + filename;
-          });
-
         });
     </script>
 </head>
@@ -74,7 +73,7 @@
 <div class="form-container">
 <h1 class="form-title">The Rainbow Graph</h1>
 <p>
-    <div class="form-title">This page is intended for instructors, <a href="/configure">klick here if you are a developer</a></div>
+    <div class="form-title">This page is intended for instructors, <a href="configure">klick here if you are a developer</a></div>
 <p>
     The Rainbow Graph helps you to visualize peer assessment scores of your class and identify submissions that are scored with high disagreements by their reviewers.
     This graph is simply a bar graph. Each student is represented by a column, and the height of the column is determined by that student’s “primary-value” entry.
@@ -87,10 +86,11 @@
 </p>
 <h2 class="form-title"></h2>
 
-<form action="/file-upload" class="dropzone form-container" id="uploader" >
+<form action="file-upload" class="dropzone form-container" id="uploader" >
     <div class="dz-message" data-dz-message>
-        <span>Drop your data files or click here to upload</span>
-        <span>Currently we support data files from the following systems: CPR(.csv), Perceptive/Sword(.xls)</span>
+        Drop your peer assessment data files here or click to upload them<br>        
+        Currently we support peer assessment data files from the following systems: <br>CPR (*.csv), Perceptive/Sword (*.xls)<br>
+        If you have other data files that you'd like us to support, please email Ferry fferry[at]ncsu.edu<br>
     </div>
     <div class="fallback">
     <input name="file" type="file" multiple />
