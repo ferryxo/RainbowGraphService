@@ -33,21 +33,26 @@
         $(function() {
           myDropzone = new Dropzone("#uploader", {addRemoveLinks: true});
           myDropzone.on("success", function(file, file_upload_resp) {
-                var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4) {
-                       configure_resp = JSON.parse(xhr.responseText);
-                       file.id = configure_resp.url.substr(configure_resp.url.lastIndexOf('/') + 1)
-                       files_table[file.id] = file
-                       //rename file
-                       var fileuploded = file.previewElement.querySelector("[data-dz-name]");
-                       fileuploded.innerHTML = file.id + "|" + file.name
-                       document.getElementById('link').innerHTML += '<li type="square"><a href="' + configure_resp.url +'" target="_blank" >' + configure_resp.url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + configure_resp.url + '\')">delete</button></li>'
-                    }
+            document.getElementById('error').innerHTML = ""
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    configure_resp = JSON.parse(xhr.responseText);
+                    file.id = configure_resp.url.substr(configure_resp.url.lastIndexOf('/') + 1)
+                    files_table[file.id] = file
+                    //rename file
+                    var fileuploded = file.previewElement.querySelector("[data-dz-name]");
+                    fileuploded.innerHTML = file.id + "|" + file.name
+                    document.getElementById('link').innerHTML += '<li type="square"><a href="' + configure_resp.url + '" target="_blank" >' + configure_resp.url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + configure_resp.url + '\')">delete</button></li>'
                 }
-                xhr.open("POST", "configure", true);
-                xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-                xhr.send(JSON.stringify(file_upload_resp));
+            }
+            xhr.open("POST", "configure", true);
+            xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+            xhr.send(JSON.stringify(file_upload_resp));
+
+          });
+          myDropzone.on("error", function(file, resp){
+              document.getElementById('error').innerHTML = "<h2><font color='red'>" + resp.error + "</font></h2><br>"
           });
 
           myDropzone.on("removedfile", function(file, resp) {
@@ -99,6 +104,7 @@
 </div>
 <p>
 <div class="form-container">
+    <div id="error"></div>
     <h2 class="form-title">Your Rainbow Graph can be accessed through the following URLs</h2>
     <ul>
         <div id="link"></div>
