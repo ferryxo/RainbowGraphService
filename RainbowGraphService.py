@@ -110,6 +110,7 @@ def file_upload():
                 prev_author_name = author_name
         else:
             debug_logger.error("someone uploaded an unsupported csv file")
+            return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
     elif file.filename.endswith(".xls"):
         best = 7
@@ -168,10 +169,14 @@ def file_upload():
                 prev_author = author
         else:
             debug_logger.error("someone uploaded an unsupported xls file")
+            return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
     elif file.filename.endswith(".xlsx"):
         debug_logger.error("someone uploaded an xlsx file")
-
+        return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+    else:
+        debug_logger.error("someone uploaded unknown file (" + file.filename + ")" )
+        return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
     data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'], reverse=True)
 
@@ -180,7 +185,7 @@ def file_upload():
                     "primary-value-label": "rate average",
                     "higher_primary_value_better": True,
                     "values-label": "ranks",
-                    "higher_values_better": True,
+                    "higher_values_better": False,
                     "best-value-possible": best,
                     "worst-value-possible": worst,
                     "y-axis-label": "Rate Average",
