@@ -44,9 +44,8 @@ def file_upload():
         instructor_logger.info(header1)
         instructor_logger.info(header2)
 
+        #check if this is CPR data file
         if "Assignment =" in header1 and "Time =" in header2:
-            #assume this is CPR file, to be confirmed
-
 
             best = 10
             worst = 0
@@ -59,6 +58,7 @@ def file_upload():
             prev_author_name = None
             current_author_scores = []
             list_of_author_json_conf = []
+            last_self_review_score = 0
 
             for row in range(1, len(cpr_data)):
                 author_id = cpr_data[row][0]
@@ -68,33 +68,44 @@ def file_upload():
                 current_score = cpr_data[row][len(cpr_data[row])-2]
                 primary_val = cpr_data[row][3].split("/")[0]
 
-                if reviewer == '':
-                    continue
+                if reviewer != '':
+                    #handle peer assessment scores
+                    if author_id == prev_author or prev_author == None:
+                        #add this reviewer and the score to this author
+                        current_author_scores.append(float(current_score))
+                    elif prev_author != None:
+                        #calculate the avg score & standard dev. for this author
+                        authors_scores[prev_author] = current_author_scores
 
-                if author_id == prev_author or prev_author == None:
-                    #add this reviewer and the score to this author
-                    current_author_scores.append(float(current_score))
-                elif prev_author != None:
-                    #calculate the avg score & standard dev. for this author
-                    authors_scores[prev_author] = current_author_scores
+                        if "," in prev_author_name:
+                            firstname = prev_author_name.split(",")[1] if len(prev_author_name.split(","))>1 else "-"
+                            lastname = prev_author_name.split(",")[0]
+                        else:
+                            firstname = prev_author_name.split(" ")[1] if len(prev_author_name.split(" "))>1 else "-"
+                            lastname = prev_author_name.split(" ")[0]
 
-                    if "," in prev_author_name:
-                        firstname = prev_author_name.split(",")[1] if len(prev_author_name.split(","))>1 else "-"
-                        lastname = prev_author_name.split(",")[0]
-                    else:
-                        firstname = prev_author_name.split(" ")[1] if len(prev_author_name.split(" "))>1 else "-"
-                        lastname = prev_author_name.split(" ")[0]
+                        current_author_scores = sorted(current_author_scores)
+                        stdev = np.std(current_author_scores)
+                        #add self assessment score to the prev_author
+                        #TODO: check how the positions of the bars are determined. this seems to mess up the rendering
+                        #current_author_scores.append(last_self_review_score)
 
-                    element_prev_author = {
-                        "first_name": firstname,
-                        "last_name": lastname,
-                        "column_url": "",
-                        "primary_value": float(primary_val),
-                        "secondary_value": np.std(current_author_scores),
-                        "values": current_author_scores
-                    }
-                    list_of_author_json_conf.append(element_prev_author)
-                    current_author_scores = [float(current_score)]
+                        element_prev_author = {
+                            "first_name": firstname,
+                            "last_name": lastname,
+                            "column_url": "",
+                            "primary_value": float(primary_val),
+                            "secondary_value": stdev,
+                            "values": current_author_scores
+                        }
+
+                        list_of_author_json_conf.append(element_prev_author)
+                        current_author_scores = [float(current_score)]
+                        last_self_review_score = 0
+                else:
+                    #store self assessment score
+                    last_self_review_score = float(current_score)
+
                 prev_author = author_id
                 prev_author_name = author_name
         else:
@@ -114,8 +125,9 @@ def file_upload():
         header1 = data_sheet.cell(3,0)  # 3rd row
         instructor_logger.info(header1)
 
+        #check if this is perceptive / sword data file
         if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
-            #handle sword data
+
             authors_scores={}
             list_of_author_json_conf = []
 
@@ -142,6 +154,7 @@ def file_upload():
                 if prev_author == author or prev_author == None:
                     current_author_scores.append(authors_scores[author][reviewer])
                 elif prev_author != None:
+                    current_author_scores = sorted(current_author_scores)
                     element_prev_author = {
                         "first_name": prev_author,
                         "last_name": "",
@@ -205,7 +218,8 @@ def index():
     with open('configTable.json', 'w+') as f:
         json.dump(configTable, f)
 
-    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    return jsonify(url="http://0.0.0.0:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
