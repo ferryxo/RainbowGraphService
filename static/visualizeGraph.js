@@ -28,8 +28,7 @@ function visualizeGraph(){
     rankings[i].rank_avg = jsonData[0].data[i].primary_value; //rank avg corresponds to primary value in json file for each student
     }
 
-    rankScale = Math.abs(metadata['worst-value-possible']-metadata['best-value-possible'] + 1);
-
+    rankScale = Math.abs(metadata['worst-value-possible']-metadata['best-value-possible']) + 1;
 
 
     var labels="";
@@ -167,11 +166,21 @@ function visualizeGraph(){
           .attr("width", function(){return width/rankings.length})
           .attr("y", function(d,i) { t++; if(rankings[p].length==0) { p++; return 0;} if(t>rankings[p].length) {p++; t=1; return y(rankings[p].rank_avg) + (t-1) * ((height - y(rankings[p].rank_avg))/rankings[p].length);}   return y(rankings[p].rank_avg) + (t-1) * ((height - y(rankings[p].rank_avg))/rankings[p].length);  })
           .attr("height", function(d,i) {  t2++; if(t2==rankings[p2].length+1) {p2++; t2=1;} if(rankings[p2].length==0) { p2++; return 0;} if(d==0) {p2++;  return 100;}   return (height - y(rankings[p2].rank_avg))/rankings[p2].length - 1})
-          .style("fill",function(d){return colorKey[inputColorScheme][Math.floor(((d-1)*colorKey[inputColorScheme].length / rankScale))];})
+          .style("fill",function(d){
+              color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d - metadata['worst-value-possible'] : d - metadata['best-value-possible'];
+              color_index = Math.round(color_index * colorKey[inputColorScheme].length / rankScale);
+              console.log("d: " + d + ", color_idx: " + color_index);
+              return colorKey[inputColorScheme][Math.round(color_index)];
+          })
           .attr("rx",8)
           .attr("ry",8)
           .on("mouseover", function() { this.style.fill = "gray"; })
-         .on("mouseout", function(d,i) {  this.style.fill = colorKey[inputColorScheme][Math.floor(((d-1)*colorKey[inputColorScheme].length / rankScale))]; })
+         .on("mouseout", function(d,i) {
+              color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d - metadata['worst-value-possible'] : d - metadata['best-value-possible'];
+              color_index = Math.round(color_index * colorKey[inputColorScheme].length / rankScale);
+              console.log("d: " + d + ", color_idx: " + color_index);
+              this.style.fill = colorKey[inputColorScheme][Math.round(color_index)];
+         })
 
 
       svg.select("g")

@@ -60,12 +60,21 @@ def file_upload():
             list_of_author_json_conf = []
             last_self_review_score = 0
 
+
+            #find the last row in this file. CPR data file is inconsistent it may contain empty fields.
+            last_row = len(cpr_data[0])
+            for i in range(len(cpr_data[0])-1,0, -1):
+                if cpr_data[0][i] == '':
+                    last_row-=1;
+                else:
+                    break
+
             for row in range(1, len(cpr_data)):
                 author_id = cpr_data[row][0]
                 author_name = cpr_data[row][2]
                 reviewer = cpr_data[row][4]
                 cpi = cpr_data[row][5]
-                current_score = cpr_data[row][len(cpr_data[row])-2]
+                current_score = cpr_data[row][last_row-2]
                 primary_val = cpr_data[row][3].split("/")[0]
 
                 if reviewer != '':
@@ -84,7 +93,7 @@ def file_upload():
                             firstname = prev_author_name.split(" ")[1] if len(prev_author_name.split(" "))>1 else "-"
                             lastname = prev_author_name.split(" ")[0]
 
-                        current_author_scores = sorted(current_author_scores)
+                        current_author_scores = sorted(current_author_scores, reverse=True)
                         stdev = np.std(current_author_scores)
                         #add self assessment score to the prev_author
                         #TODO: check how the positions of the bars are determined. this seems to mess up the rendering
@@ -155,7 +164,7 @@ def file_upload():
                 if prev_author == author or prev_author == None:
                     current_author_scores.append(authors_scores[author][reviewer])
                 elif prev_author != None:
-                    current_author_scores = sorted(current_author_scores)
+                    current_author_scores = sorted(current_author_scores, reverse=True)
                     element_prev_author = {
                         "first_name": prev_author,
                         "last_name": "",
@@ -185,7 +194,7 @@ def file_upload():
                     "primary-value-label": "rate average",
                     "higher_primary_value_better": True,
                     "values-label": "ranks",
-                    "higher_values_better": False,
+                    "higher_values_better": True,
                     "best-value-possible": best,
                     "worst-value-possible": worst,
                     "y-axis-label": "Rate Average",
@@ -224,7 +233,7 @@ def index():
         json.dump(configTable, f)
 
     #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
-    return jsonify(url="http://0.0.0.0:3005/viz/" + id.urn[9:])
+    return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
@@ -254,4 +263,4 @@ def visualize(id):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3005, threaded=True)
+    app.run(host='127.0.0.1', port=3005, threaded=True)
