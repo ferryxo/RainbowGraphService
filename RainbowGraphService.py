@@ -34,7 +34,7 @@ configTable = {}
 @cross_origin()
 def file_upload():
     file = request.files['file']
-
+    color_scheme = "5b"
     #check type of the files, find a way to check the header
     if file.filename.endswith(".csv"):
         #log the headers
@@ -45,9 +45,15 @@ def file_upload():
 
         #check if this is CPR data file
         if "Assignment =" in header1 and "Time =" in header2:
-
+            higher_primary_value_better = True
+            primary_value_label = "Average Rate"
+            secondary_value_label =	"Controversy"
+            values_label = "Rating"
+            y_axis_label =	"Average Rate"
+            x_axis_label =	"Students"
             best = 10
             worst = 0
+            color_scheme = "10b"
             reader = csv.reader(file, dialect="excel")
 
             cpr_data = list(reader)
@@ -121,8 +127,7 @@ def file_upload():
             return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
     elif file.filename.endswith(".xls"):
-        best = 7
-        worst = 0
+
         book = xlrd.open_workbook(file_contents=file.read())
         data_sheet = book.sheet_by_index(0)
 
@@ -136,6 +141,16 @@ def file_upload():
 
         #check if this is perceptive / sword data file
         if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
+
+            higher_primary_value_better = True
+            primary_value_label = "Average Rate"
+            secondary_value_label =	"Controversy"
+            values_label = "Rating"
+            y_axis_label =	"Average Rate"
+            x_axis_label =	"Students"
+            best = 7
+            worst = 0
+            color_scheme = "7b"
 
             authors_scores={}
             list_of_author_json_conf = []
@@ -192,11 +207,24 @@ def file_upload():
             instructor_logger.info(header1.value)
             #TODO process CPR XLSX
         elif "AssignmentTitle" in header1.value and "CaseTitle" in data_sheet.cell(0,3).value: # MobiusSLIP
+
+            primary_value_label = "Attainment"
+            secondary_value_label =	"Controversy"
+            values_label = "Rank"
+            y_axis_label = "Attainment"
+            x_axis_label = "Students"
+            best = 1
+            worst = 5
+            color_scheme = "5b"
+            higher_primary_value_better = True
+
+            #find the relevant columns
             fname_col = 0
             lname_col = 0
             rank_avg_col = 0
             rank_std_dev = 0
             review_cols = []
+
             for col in range(0, data_sheet.ncols):
                 if data_sheet.cell(0, col).value == "FirstName":
                     fname_col = col
@@ -207,12 +235,39 @@ def file_upload():
                 elif data_sheet.cell(0, col).value == "ScrkStuSub_Cont":
                     rank_std_dev = col
                 elif data_sheet.cell(0, col).value.startswith("RankStuAr_"):
-                    review_cols.append(col)
-
-            for row in range(0, data_sheet.nrows):
-
+                    if data_sheet.cell(0, col).value.split("_")[1].isdigit():
+                        review_cols.append(col)
 
 
+            #fetch the relevant data per row, append them to list_of_author_json_conf
+            list_of_author_json_conf = []
+            for row in range(1, data_sheet.nrows):
+                current_author_scores = []
+                avg = 0
+                std = 0
+
+                if data_sheet.cell(row, rank_avg_col).value != '':
+                    avg = float(data_sheet.cell(row, rank_avg_col).value)
+                if data_sheet.cell(row, rank_std_dev).value != '':
+                    std = float(data_sheet.cell(row, rank_std_dev).value)
+
+                for i in range(0, len(review_cols)):
+                    if data_sheet.cell(row, review_cols[i]).value != '':
+                        if (best > worst and float(data_sheet.cell(row, review_cols[i]).value)>=worst) or \
+                                worst > best and float(data_sheet.cell(row, review_cols[i]).value)>=best:
+                            current_author_scores.append(float(data_sheet.cell(row, review_cols[i]).value))
+
+                current_author_scores = sorted(current_author_scores)
+
+                element_prev_author = {
+                        "first_name": data_sheet.cell(row, fname_col).value,
+                        "last_name": data_sheet.cell(row, lname_col).value,
+                        "column_url": "",
+                        "primary_value": avg,
+                        "secondary_value": std,
+                        "values": current_author_scores
+                    }
+                list_of_author_json_conf.append(element_prev_author)
         else:
             debug_logger.error("someone uploaded an xlsx file")
             return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
@@ -220,20 +275,20 @@ def file_upload():
         debug_logger.error("someone uploaded unknown file (" + file.filename + ")" )
         return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
-    data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'], reverse=True)
+    data = sorted(list_of_author_json_conf, key=lambda k: k['primary_value'], reverse=higher_primary_value_better)
 
     config = {
         "metadata": {
-                    "primary-value-label": "rate average",
-                    "higher_primary_value_better": True,
-                    "values-label": "ranks",
-                    "higher_values_better": True,
+                    "primary-value-label": primary_value_label,
+                    "higher_primary_value_better": higher_primary_value_better,
+                    "values-label": values_label,
+                    "higher_values_better": False,
                     "best-value-possible": best,
                     "worst-value-possible": worst,
-                    "y-axis-label": "Rate Average",
-                    "x-axis-label": "Students",
-                    "color-scheme": "5b",
-                    "secondary-value-label": "variance"
+                    "y-axis-label": y_axis_label,
+                    "x-axis-label": x_axis_label,
+                    "color-scheme": color_scheme,
+                    "secondary-value-label": secondary_value_label
             },
             "data": data
         }

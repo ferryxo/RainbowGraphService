@@ -157,7 +157,20 @@ yAxis = d3.svg.axis()
     .tickPadding(10)
     .orient("left");
 
-y.domain([metadata['worst-value-possible']+0.5,metadata['best-value-possible']]);
+/// flip the y-axis depending on the higher_primary_value_better
+primary_vals = rankings.map(function(x){return x.rank_avg});
+min_primary_val = Math.floor(Math.min(...primary_vals));
+max_primary_val = Math.ceil(Math.max(...primary_vals));
+
+if (metadata['higher_primary_value_better']){
+    start_y_scale = min_primary_val-1;
+    end_y_scale = max_primary_val+1;
+}else{
+    start_y_scale = max_primary_val+1;
+    end_y_scale = min_primary_val-1;
+}
+
+y.domain([start_y_scale, end_y_scale]);
 
 
 //If the user has not use brushing yet, this will make sure that all the students are being shown in the main graph.
@@ -320,24 +333,30 @@ cclen=0;
       })
       .attr("height", function(d,i) {
           t2++;
-          if(t2==rankings[p2].length+1) {
-              p2++;
-              t2=1;
-          }
+          //console.log("i =" + i + ", p2 =" + p2)
+
           if(rankings[p2].length==0) {
-              p2++; return 0;
+              p2++;
+              return 0;
           }
+
           if(d==0) {
               p2++;
               return 100;
           }
+
+          if(t2==rankings[p2].length+1) {
+              p2++;
+              t2=1;
+          }
+
           return (height - y(rankings[p2].rank_avg))/rankings[p2].length - 1
       })
       .style("fill",function(d){
-          color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d - metadata['worst-value-possible'] : d - metadata['best-value-possible'];
-          color_index = Math.round(color_index * colorKey[inputColorScheme].length / rankScale);
+          color_scale = colorKey[inputColorScheme].length / rankScale
+          color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d : d - metadata['best-value-possible'];
           //console.log("d: " + d + ", color_idx: " + color_index);
-          return colorKey[inputColorScheme][Math.round(color_index)];
+          return colorKey[inputColorScheme][Math.round(color_index * color_scale)];
       })
       .attr("rx",8)
       .attr("ry",8)
@@ -413,7 +432,7 @@ cclen=0;
           return tooltip.style("visibility", "visible");
         })
       .on("mouseout", function(d,i) {
-          color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d - metadata['worst-value-possible'] : d - metadata['best-value-possible'];
+          color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d : d - metadata['best-value-possible'];
           color_index = Math.round(color_index * colorKey[inputColorScheme].length / rankScale);
           //console.log("d: " + d + ", color_idx: " + color_index);
           this.style.fill = colorKey[inputColorScheme][Math.round(color_index)];
