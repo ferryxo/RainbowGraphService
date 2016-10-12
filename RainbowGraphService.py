@@ -4,7 +4,6 @@ from flask_cors import CORS, cross_origin
 import uuid
 import json
 import xlrd
-import openpyxl
 import numpy as np
 import csv
 import logging
@@ -181,8 +180,42 @@ def file_upload():
             return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
 
     elif file.filename.endswith(".xlsx"):
-        debug_logger.error("someone uploaded an xlsx file")
-        return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        book = xlrd.open_workbook(file_contents=file.read())
+        data_sheet = book.sheet_by_index(0)
+        #check if this is CPR file
+        header1 = data_sheet.cell(0,0)  # 1st row
+
+        if "Assignment =" in header1.value:
+            #log the headers
+            instructor_logger.info(header1.value)
+            header1 = data_sheet.cell(1,0)  # 2nd row
+            instructor_logger.info(header1.value)
+            #TODO process CPR XLSX
+        elif "AssignmentTitle" in header1.value and "CaseTitle" in data_sheet.cell(0,3).value: # MobiusSLIP
+            fname_col = 0
+            lname_col = 0
+            rank_avg_col = 0
+            rank_std_dev = 0
+            review_cols = []
+            for col in range(0, data_sheet.ncols):
+                if data_sheet.cell(0, col).value == "FirstName":
+                    fname_col = col
+                elif data_sheet.cell(0, col).value == "LastName":
+                    lname_col = col
+                elif data_sheet.cell(0, col).value == "ScrkStuSub_Attm":
+                    rank_avg_col = col
+                elif data_sheet.cell(0, col).value == "ScrkStuSub_Cont":
+                    rank_std_dev = col
+                elif data_sheet.cell(0, col).value.startswith("RankStuAr_"):
+                    review_cols.append(col)
+
+            for row in range(0, data_sheet.nrows):
+
+
+
+        else:
+            debug_logger.error("someone uploaded an xlsx file")
+            return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
     else:
         debug_logger.error("someone uploaded unknown file (" + file.filename + ")" )
         return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE

@@ -489,9 +489,9 @@ cclen=0;
           }
           return tooltip.style("visibility", "hidden");
      })
-        .on("mousemove", function(d, i){
+      .on("mousemove", function(d, i){
             return tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");
-        })
+	  })
 
 
   svg.select("g")
