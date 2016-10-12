@@ -320,8 +320,8 @@ def index():
     with open('configTable.json', 'w+') as f:
         json.dump(configTable, f)
 
-    #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
-    return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
+    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
@@ -346,10 +346,10 @@ def visualize(id):
      if config == None:
          return jsonify(error="Shoot.. I couldn't find the config data")
      else:
-        return render_template('index.html', json_data = json.dumps(config))
+         return render_template('index.html', json_data = json.dumps(config))
 
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=3005, threaded=True)
-    #app.run(host='0.0.0.0', port=3005, threaded=True)
+    #app.run(host='127.0.0.1', port=3005, threaded=True)
+    app.run(host='0.0.0.0', port=3005, threaded=True)
