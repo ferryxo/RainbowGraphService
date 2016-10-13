@@ -87,6 +87,8 @@ font-size: 9px;
    min-width:300px;
    padding:20px;
    width:800px;
+   display: block;
+   margin: auto;
    }
 .form-field {
    border: 1px solid #c9b7a2;
@@ -169,3 +171,19 @@ font-size: 9px;
    background-image: -ms-linear-gradient(top, #6aa436 0%, #8dc059 100%);
    color: #fff;
    }
+
+.footer{
+    clear: both;
+    height: 50px;
+    display: block;
+    margin: auto;
+    font-size: 12px;
+    background-color: #725129;
+    color:#e4d5c3;
+    text-align: center;
+    font-family: 'Helvetica Neue',Helvetica,sans-serif;
+    text-decoration: none;
+    min-width:300px;
+    padding:20px;
+    width:800px;
+}

@@ -75,6 +75,15 @@
     </script>
 </head>
 <body>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
 <div class="form-container">
 <h1 class="form-title">The Rainbow Graph</h1>
 <p>
@@ -88,14 +97,17 @@
     Some students may have more “values” than other students and that’s OK. The overall column height will always be drawn such that its height corresponds to the “primary-value” provided by you.
 
     <a href="https://www.peerlogic.org/visualization-rainbowgraph/" target="_blank">Click here to learn more about the Rainbow Graph.</a>
+
+    <br/>
+    <div class="fb-like" data-href="https://www.facebook.com/nsfpeerlogic" data-layout="standard" data-action="like" data-size="small" data-show-faces="false" data-share="true"></div>
+    <br/>
 </p>
 <h2 class="form-title"></h2>
 
 <form action="file-upload" class="dropzone form-container" id="uploader" >
     <div class="dz-message" data-dz-message>
         Drop your peer assessment data files here or click to upload them<br>        
-        Currently we support peer assessment data files from the following systems: <br>CPR (*.csv), Perceptive/Sword (*.xls)<br>
-        If you have other data files that you'd like us to support, please email Ferry fferry[at]ncsu.edu<br>
+        Currently we support peer assessment data files from the following systems: <br>CPR (*.csv), Perceptive/Sword (*.xls), MobiusSLIP (*.xlsx)<br>
     </div>
     <div class="fallback">
     <input name="file" type="file" multiple />
@@ -109,6 +121,13 @@
     <ul>
         <div id="link"></div>
     </ul>
+</div>
+<div class="footer">
+    © PeerLogic. All rights reserved.
+    <br/>
+    For support or new feature request, please contact:
+    Dr. Ferry Pramudianto | Senior Research Engineer | 919 513-0816 | fferry (at) ncsu.edu
+    Computer Science Department | North Carolina State University
 </div>
 </body>
 </html>
