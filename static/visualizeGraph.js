@@ -282,13 +282,15 @@ p=0;
 p2=0;
 p3=0;
 p4=0;
+p5=0;
 t=0;
 t2=0;
 t3=0;
 t4=0;
+t5=0;
 cc=0;
 cclen=0;
-
+original_color = ""
 //https://coolors.co/browser
 
 
@@ -340,10 +342,11 @@ cclen=0;
               return 0;
           }
 
-          if(d==0) {
+          //this piece of sh** causes a rendering bug if it founds 0s. I'm not sure what this is for.
+          /*if(d==0) {
               p2++;
               return 100;
-          }
+          }*/
 
           if(t2==rankings[p2].length+1) {
               p2++;
@@ -352,11 +355,22 @@ cclen=0;
 
           return (height - y(rankings[p2].rank_avg))/rankings[p2].length - 1
       })
-      .style("fill",function(d){
+      .style("fill",function(d, i){
+          t5++;
+
+          if(t5==rankings[p5].length+1) {
+              p5++;
+              t5=1;
+          }
+
           color_scale = colorKey[inputColorScheme].length / rankScale
           color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d : d - metadata['best-value-possible'];
           //console.log("d: " + d + ", color_idx: " + color_index);
-          return colorKey[inputColorScheme][Math.round(color_index * color_scale)];
+          color = colorKey[inputColorScheme][Math.round(color_index * color_scale)];
+          if(metadata["highlight-top-most-bar"] && t5==1)
+              color = ColorLuminance(color, 0.3)
+
+          return color;
       })
       .attr("rx",8)
       .attr("ry",8)
@@ -368,6 +382,7 @@ cclen=0;
           return stcc[i];
       })
       .on("mouseover", function(d, i) {
+          original_color = this.style.fill
           this.style.fill = "gray";
           tooltip.text(d);
           idFromCircle = this.getAttribute("id");
@@ -432,10 +447,8 @@ cclen=0;
           return tooltip.style("visibility", "visible");
         })
       .on("mouseout", function(d,i) {
-          color_index = (metadata['best-value-possible'] > metadata['worst-value-possible']) ? metadata['best-value-possible'] - d : d - metadata['best-value-possible'];
-          color_index = Math.round(color_index * colorKey[inputColorScheme].length / rankScale);
-          //console.log("d: " + d + ", color_idx: " + color_index);
-          this.style.fill = colorKey[inputColorScheme][Math.round(color_index)];
+
+          this.style.fill = original_color;
 
           idFromCircle = this.getAttribute("id");
           //if crit comparer is defined in the json
@@ -530,6 +543,26 @@ function type(d) {
   return d;
 }
 
+
+function ColorLuminance(hex, lum) {
+
+	// validate hex string
+	hex = String(hex).replace(/[^0-9a-f]/gi, '');
+	if (hex.length < 6) {
+		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+	}
+	lum = lum || 0;
+
+	// convert to decimal and change luminosity
+	var rgb = "#", c, i;
+	for (i = 0; i < 3; i++) {
+		c = parseInt(hex.substr(i*2,2), 16);
+		c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+		rgb += ("00"+c).substr(c.length);
+	}
+
+	return rgb;
+}
 
 function slider(){
 

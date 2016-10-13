@@ -35,6 +35,8 @@ configTable = {}
 def file_upload():
     file = request.files['file']
     color_scheme = "5b"
+    highlight_top_most_bar = False
+
     #check type of the files, find a way to check the header
     if file.filename.endswith(".csv"):
         #log the headers
@@ -51,6 +53,7 @@ def file_upload():
             values_label = "Rating"
             y_axis_label =	"Average Rate"
             x_axis_label =	"Students"
+            highlight_top_most_bar = True
             best = 10
             worst = 0
             color_scheme = "10b"
@@ -64,7 +67,7 @@ def file_upload():
             current_author_scores = []
             list_of_author_json_conf = []
             last_self_review_score = 0
-
+            prev_primary_val = 0;
 
             #find the last row in this file. CPR data file is inconsistent it may contain empty fields.
             last_row = len(cpr_data[0])
@@ -73,6 +76,8 @@ def file_upload():
                     last_row-=1;
                 else:
                     break
+
+
 
             for row in range(1, len(cpr_data)):
                 author_id = cpr_data[row][0]
@@ -87,7 +92,8 @@ def file_upload():
                     if author_id == prev_author or prev_author == None:
                         #add this reviewer and the score to this author
                         current_author_scores.append(float(current_score))
-                    elif prev_author != None:
+                        prev_primary_val = primary_val
+                    elif prev_author != None and author_id != prev_author:
                         #calculate the avg score & standard dev. for this author
                         authors_scores[prev_author] = current_author_scores
 
@@ -102,13 +108,13 @@ def file_upload():
                         stdev = np.std(current_author_scores)
                         #add self assessment score to the prev_author
                         #TODO: check how the positions of the bars are determined. this seems to mess up the rendering
-                        #current_author_scores.append(last_self_review_score)
+                        current_author_scores.insert(0, last_self_review_score)
 
                         element_prev_author = {
                             "first_name": firstname,
                             "last_name": lastname,
                             "column_url": "",
-                            "primary_value": float(primary_val),
+                            "primary_value": float(prev_primary_val),
                             "secondary_value": stdev,
                             "values": current_author_scores
                         }
@@ -288,7 +294,8 @@ def file_upload():
                     "y-axis-label": y_axis_label,
                     "x-axis-label": x_axis_label,
                     "color-scheme": color_scheme,
-                    "secondary-value-label": secondary_value_label
+                    "secondary-value-label": secondary_value_label,
+                    "highlight-top-most-bar": highlight_top_most_bar
             },
             "data": data
         }
