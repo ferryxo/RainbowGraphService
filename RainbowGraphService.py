@@ -146,7 +146,14 @@ def file_upload():
         instructor_logger.info(header1)
 
         #check if this is perceptive / sword data file
-        if data_sheet.cell(4,0).value == "Paper Author" and data_sheet.cell(4,1).value == "Reviewer":
+        if data_sheet.cell(4,0).value == "Paper Author" :
+
+            reviewer_col = 1
+            start_score_col = 2
+
+            if data_sheet.cell(4,2).value == "Reviewer":
+                reviewer_col = 2
+                start_score_col = 4
 
             higher_primary_value_better = True
             primary_value_label = "Average Rate"
@@ -165,8 +172,8 @@ def file_upload():
             current_author_scores = []
             peer_given_holistic_score = {}
             for row in range(5, data_sheet.nrows):
-                author = data_sheet.cell(row,0).value
-                reviewer = data_sheet.cell(row,1).value
+                author = data_sheet.cell(row, 0).value
+                reviewer = data_sheet.cell(row, reviewer_col).value
 
                 if authors_scores.get(author) == None :
                     authors_scores[author] = {}
@@ -174,7 +181,7 @@ def file_upload():
                 #average scores all dimensions
                 divider = 0
                 score_sum = 0
-                for col in range(2, data_sheet.ncols):
+                for col in range(start_score_col, data_sheet.ncols):
                     if not data_sheet.cell(row, col).value == '':
                         score_sum += float(data_sheet.cell(row, col).value)
                         divider += 1
