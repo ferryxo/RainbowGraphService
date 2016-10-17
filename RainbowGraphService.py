@@ -53,7 +53,7 @@ def setup_sql_lite_db():
         print "Error %s:" % e.args[0]
         sys.exit(1)
 
-
+#TODO refactor exctract each file processing to a method
 @app.route('/file-upload', methods=['POST'])
 @cross_origin()
 def file_upload():
@@ -336,35 +336,26 @@ def file_upload():
 @app.route('/instructor', methods=['GET'])
 @cross_origin()
 def instructor():
-    #check type of the files
     return render_template('instructor.html')
 
-@app.route('/configure', methods=['GET', 'POST'])
+@app.route('/developer', methods=['GET'])
 @cross_origin()
-def index():
+def developer():
+    return render_template('developer.html')
+
+@app.route('/configure', methods=['POST'])
+@cross_origin()
+def configure():
     global cur, con
 
-    if request.method == 'GET':
-        return render_template('developer.html')
-
-    # try:
-    #     with open('configTable.json', 'r') as f:
-    #         configTable = json.load(f)
-    # # if the file is empty the ValueError will be thrown
-    # except:
-    #     configTable = {}
-
+    # generate id
     id = uuid.uuid4();
-    # configTable[id.urn[9:]] = request.json
 
     cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
     con.commit()
 
-    # with open('configTable.json', 'w+') as f:
-    #     json.dump(configTable, f)
-
-    #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
-    return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
+    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
@@ -399,9 +390,7 @@ def visualize(id):
      else:
          return render_template('visualization.html', json_data = rows[0])
 
-
-
 if __name__ == '__main__':
     setup_sql_lite_db()
-    app.run(host='127.0.0.1', port=3005, threaded=True)
-    #app.run(host='0.0.0.0', port=3005, threaded=True)
+    #app.run(host='127.0.0.1', port=3005, threaded=True)
+    app.run(host='0.0.0.0', port=3005, threaded=True)
