@@ -147,6 +147,7 @@ var margin = {top: 0.1 * window.innerHeight, right: 0.01 * window.innerWidth, bo
     width = window.innerWidth*0.9;
     height = (window.innerHeight * 0.6) -  margin.top - margin.bottom;
 
+
 y = d3.scale.linear()
     .range([height, 0]);
 
@@ -159,20 +160,26 @@ yAxis = d3.svg.axis()
 
 /// flip the y-axis depending on the higher_primary_value_better
 primary_vals = rankings.map(function(x){return x.rank_avg});
-min_primary_val = Math.floor(Math.min(...primary_vals));
-max_primary_val = Math.ceil(Math.max(...primary_vals));
+min_primary_val = metadata['worst-primary-value-possible'] == undefined ? Math.floor(Math.min(...primary_vals)): metadata['worst-primary-value-possible'];
+max_primary_val = metadata['best-primary-value-possible'] == undefined ? Math.ceil(Math.max(...primary_vals)): metadata['best-primary-value-possible'];
 
-if (metadata['higher_primary_value_better']){
-    start_y_scale = min_primary_val-1;
-    end_y_scale = max_primary_val+1;
-}else{
-    start_y_scale = max_primary_val+1;
-    end_y_scale = min_primary_val-1;
-}
+//if (metadata['higher_primary_value_better']){
+//    start_y_scale = min_primary_val-1;
+//    end_y_scale = max_primary_val+1;
+//}else{
+//    start_y_scale = max_primary_val+1;
+//    end_y_scale = min_primary_val-1;
+//}
 
-y.domain([start_y_scale, end_y_scale]);
+    if(metadata['worst-primary-value-possible'] != undefined && metadata['best-primary-value-possible'] != undefined)
+        flip = metadata['worst-primary-value-possible'] < metadata['best-primary-value-possible']
+    else
+        flip = metadata['higher-primary-value-better']
 
-
+    if (flip)
+        y.domain([min_primary_val, max_primary_val]);
+    else
+        y.domain([max_primary_val, min_primary_val]);
 //If the user has not use brushing yet, this will make sure that all the students are being shown in the main graph.
 if (brushCheck==false){
     

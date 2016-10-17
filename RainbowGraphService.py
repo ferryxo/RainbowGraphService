@@ -8,6 +8,10 @@ import numpy as np
 import csv
 import logging
 
+import sqlite3 as sqllite
+import sys
+
+
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
 # first file logger
@@ -28,6 +32,26 @@ app = Flask(__name__)
 CORS(app)
 
 configTable = {}
+cur = None
+con = None
+
+def setup_sql_lite_db():
+    try:
+
+        global con
+        con = sqllite.connect('config_json.db', check_same_thread=False)
+        global cur
+        cur = con.cursor()
+        #cur.execute('DROP TABLE IF EXISTS Comment')
+        sql = "CREATE TABLE IF NOT EXISTS Config (" \
+              "    id VARCHAR, " \
+              "    json TEXT)"
+        cur.execute(sql)
+        con.commit()
+
+    except sqllite.Error, e:
+        print "Error %s:" % e.args[0]
+        sys.exit(1)
 
 
 @app.route('/file-upload', methods=['POST'])
@@ -293,9 +317,9 @@ def file_upload():
     config = {
         "metadata": {
                     "primary-value-label": primary_value_label,
-                    "higher_primary_value_better": higher_primary_value_better,
+                    "higher-primary-value-better": higher_primary_value_better,
                     "values-label": values_label,
-                    "higher_values_better": False,
+                    "higher-values-better": False,
                     "best-value-possible": best,
                     "worst-value-possible": worst,
                     "y-axis-label": y_axis_label,
@@ -318,52 +342,66 @@ def instructor():
 @app.route('/configure', methods=['GET', 'POST'])
 @cross_origin()
 def index():
-    if request.method == 'GET':
-        return render_template('input_form.html')
+    global cur, con
 
-    try:
-        with open('configTable.json', 'r') as f:
-            configTable = json.load(f)
-    # if the file is empty the ValueError will be thrown
-    except:
-        configTable = {}
+    if request.method == 'GET':
+        return render_template('developer.html')
+
+    # try:
+    #     with open('configTable.json', 'r') as f:
+    #         configTable = json.load(f)
+    # # if the file is empty the ValueError will be thrown
+    # except:
+    #     configTable = {}
 
     id = uuid.uuid4();
-    configTable[id.urn[9:]] = request.json
+    # configTable[id.urn[9:]] = request.json
 
-    with open('configTable.json', 'w+') as f:
-        json.dump(configTable, f)
+    cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
+    con.commit()
 
-    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
-    #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
+    # with open('configTable.json', 'w+') as f:
+    #     json.dump(configTable, f)
+
+    #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
 def visualize(id):
-
+ global cur, conn
  # load from file:
- try:
-   with open('configTable.json', 'r+') as f:
-       configTable = json.load(f)
-    # if the file is empty the ValueError will be thrown
- except ValueError:
-   configTable = {}
- config = configTable.get(id)
+ # try:
+ #   with open('configTable.json', 'r+') as f:
+ #       configTable = json.load(f)
+ #    # if the file is empty the ValueError will be thrown
+ # except ValueError:
+ #   configTable = {}
+ # config = configTable.get(id)
 
  if request.method == 'DELETE':
-    f.close()
-    configTable.pop(id, None)
-    with open('configTable.json', 'w+') as f:
-        json.dump(configTable, f)
+    # f.close()
+    # configTable.pop(id, None)
+    # with open('configTable.json', 'w+') as f:
+    #     json.dump(configTable, f)
+
+    cur.execute("DELETE FROM Config WHERE id='" + id + "'")
+    con.commit()
+
     return "", status.HTTP_200_OK
  else:
-     if config == None:
+     cur.execute("SELECT json FROM Config WHERE id='" + id + "'")
+     rows = cur.fetchall()
+
+     # if config == None
+     if len(rows) == 0:
          return jsonify(error="Shoot.. I couldn't find the config data")
      else:
-         return render_template('index.html', json_data = json.dumps(config))
+         return render_template('visualization.html', json_data = rows[0])
 
 
 
 if __name__ == '__main__':
-    #app.run(host='127.0.0.1', port=3005, threaded=True)
-    app.run(host='0.0.0.0', port=3005, threaded=True)
+    setup_sql_lite_db()
+    app.run(host='127.0.0.1', port=3005, threaded=True)
+    #app.run(host='0.0.0.0', port=3005, threaded=True)
