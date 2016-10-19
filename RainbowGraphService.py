@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 from flask_api import status
 from flask_cors import CORS, cross_origin
 import uuid
@@ -52,6 +52,10 @@ def setup_sql_lite_db():
     except sqllite.Error, e:
         print "Error %s:" % e.args[0]
         sys.exit(1)
+
+@app.route('/')
+def index():
+    return redirect('developer')
 
 #TODO refactor exctract each file processing to a method
 @app.route('/file-upload', methods=['POST'])
@@ -337,6 +341,7 @@ def file_upload():
 @cross_origin()
 def instructor():
     return render_template('instructor.html')
+
 
 @app.route('/developer', methods=['GET'])
 @cross_origin()

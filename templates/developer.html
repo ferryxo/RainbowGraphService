@@ -19,7 +19,7 @@
                                 + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + resp.url + '\')">delete</button></li>';
                     }
                 }
-                xhr.open(input_form.method, input_form.action, true);
+                xhr.open(input_form.method, window.location.href.replace("developer", "configure") , true);
                 xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
                 xhr.send(document.getElementById("json_config").value);
             }
@@ -102,7 +102,7 @@
         }(document, 'script', 'facebook-jssdk'));
         </script>
         <form class="form-container" action="http://peerlogic.csc.ncsu.edu/rainbowgraph/configure" method="POST" name="input_form">
-            <div class="form-title"><h2>The Rainbow Graph</h2></div>
+            <div><h2 class="form-title">The Rainbow Graph</h2></div>
             <div class="form-title">This page is intended for developers, <a href="instructor">klick here if you are an instructor</a></div>
 
             <div class="form-title">Enter a JSON Configuration for your Rainbow Graph</div>
