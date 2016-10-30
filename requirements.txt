@@ -1,0 +1,5 @@
+numpy==1.10.0.post2
+Flask==0.11.1
+flask_api==0.6.9
+flask_cors==3.0.2
+xlrd==1.0.0
