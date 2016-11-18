@@ -9,7 +9,7 @@ f = sequential (blue)
 x,y,z = extras
 */
 
-colorKey = {
+window.colorKey = {
 "2a":["#636363","#bdbdbd"],
 "2b":["#99d594","#fc8d59"],
 "2c":["#91bfdb","#fc8d59"],

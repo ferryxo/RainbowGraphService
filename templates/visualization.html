@@ -15,10 +15,8 @@
 <!--<center><h3 id="title"></h3></center>-->
 <script>
 jsonData = JSON.parse({{ json_data|tojson|safe }})
-metadata = jsonData[0].metadata;
-init();
-visualizeGraph();
-window.onresize = visualizeGraph;
+rc = new RainbowGraph(jsonData);
+window.onresize = rc.visualizeGraph();
 </script>
 
 </body>
