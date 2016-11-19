@@ -15,6 +15,7 @@
 <script>
 jsonData = JSON.parse({{ json_data|tojson|safe }})
 rc = new RainbowGraph(jsonData);
+rc.visualizeGraph();
 window.onresize = function(){
     rc.visualizeGraph();
 }

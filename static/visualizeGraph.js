@@ -303,6 +303,12 @@ RainbowGraph.prototype.buildChart = function () {
 RainbowGraph.prototype.visualizeGraph = function(){
     var _this = this;
 
+    //if(this.dropdown!=null)
+    d3.select('body')
+            .selectAll('p')
+            .remove();
+
+
     this.parseData();
 
     this.inputColorScheme=this.metadata["color-scheme"];
@@ -310,10 +316,7 @@ RainbowGraph.prototype.visualizeGraph = function(){
     if(document.getElementById("title")!=undefined)
         document.getElementById("title").innerHTML = this.metadata.title;
 
-    if(this.dropdown!=null)
-        d3.select('body')
-            .selectAll('p')
-            .remove();
+
 
     this.dropdown = d3.select('body')
         .append('p')

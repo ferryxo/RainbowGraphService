@@ -359,8 +359,8 @@ def configure():
     cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
     con.commit()
 
-    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
-    #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
+    #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
