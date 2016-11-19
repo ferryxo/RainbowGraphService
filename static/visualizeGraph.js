@@ -10,6 +10,7 @@ function RainbowGraph(data) {
     this.colorKey = window.colorKey;
     this.rankings = [];
     this.allrankings = [];
+    this.dropdown = null;
 
 }
 
@@ -68,7 +69,7 @@ RainbowGraph.prototype.buildChart = function () {
     //Note how all the dimensions are a percentage of the window size. This makes the visualization window size independent.
     //This is very important part of creating a responsive page.
     var margin = {
-            top: 0.1 * window.innerHeight,
+            top: 0.01 * window.innerHeight,
             right: 0.01 * window.innerWidth,
             bottom: 0.0, left: 0.05 * window.innerWidth
         },
@@ -296,7 +297,7 @@ RainbowGraph.prototype.buildChart = function () {
         })  //this is a temporary logic. If our x axis parameter is other than url, then this will change.
         .remove();
 
-}
+};
 
 //this.hideLabels are used to indicate if student names should be hidden in x axis or not.
 RainbowGraph.prototype.visualizeGraph = function(){
@@ -309,28 +310,28 @@ RainbowGraph.prototype.visualizeGraph = function(){
     if(document.getElementById("title")!=undefined)
         document.getElementById("title").innerHTML = this.metadata.title;
 
-    var select = d3.select('body')
+    if(this.dropdown!=null)
+        d3.select('body')
+            .selectAll('p')
+            .remove();
+
+    this.dropdown = d3.select('body')
         .append('p')
         .text('Sort by ')
         .attr('class','right')
         .append('select')
-        .attr('class','right')
+        .style('right-margin', '10px')
         .on('change', function(){
             _this.onSortByChange(_this)
         });
 
-    var options = select
+    var options = this.dropdown
         .selectAll('option')
         .data(["Primary Value", "Secondary Value", "X-label"]).enter()
         .append('option')
         .text(function (d) { return d; });
 
-
-
-
-
     this.buildChart();
-
 
 };
 
