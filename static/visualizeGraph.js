@@ -273,7 +273,7 @@ RainbowGraph.prototype.buildChart = function () {
     p6=0;
     t6=0
     bar.transition()
-        .duration(600)
+        .duration(800)
         .attr("x", function (d, i) {
             t6++;
 
@@ -303,12 +303,6 @@ RainbowGraph.prototype.buildChart = function () {
 RainbowGraph.prototype.visualizeGraph = function(){
     var _this = this;
 
-    //if(this.dropdown!=null)
-    d3.select('body')
-            .selectAll('p')
-            .remove();
-
-
     this.parseData();
 
     this.inputColorScheme=this.metadata["color-scheme"];
@@ -316,12 +310,15 @@ RainbowGraph.prototype.visualizeGraph = function(){
     if(document.getElementById("title")!=undefined)
         document.getElementById("title").innerHTML = this.metadata.title;
 
-
+    if(this.dropdown!=null)
+        d3.select('body')
+            .selectAll('p')
+            .remove();
 
     this.dropdown = d3.select('body')
         .append('p')
         .text('Sort by ')
-        .attr('class','right')
+        .attr('class','right-align')
         .append('select')
         .style('right-margin', '10px')
         .on('change', function(){
@@ -330,7 +327,7 @@ RainbowGraph.prototype.visualizeGraph = function(){
 
     var options = this.dropdown
         .selectAll('option')
-        .data(["Primary Value", "Secondary Value", "X-label"]).enter()
+        .data([this.metadata["primary-value-label"], this.metadata["secondary-value-label"], this.metadata["x-axis-label"]]).enter()
         .append('option')
         .text(function (d) { return d; });
 
@@ -344,17 +341,16 @@ RainbowGraph.prototype.onSortByChange = function(obj) {
     add =  _this.metadata['higher_primary_value_better']? 1 : -1
 
     selectValue = d3.select('select').property('value');
-
     _this.rankings.sort(function(a, b) {
-        if(selectValue == "X-label"){
+        if(selectValue == _this.metadata["x-axis-label"]){
             if(a.first_name != "" )
                 return a.first_name.toLowerCase().localeCompare( b.first_name.toLowerCase());
             else if (a.first_name == "" && b.first_name == "")
                 return 0;
-        }else if(selectValue == "Primary Value") {
+        }else if(selectValue == _this.metadata["primary-value-label"]) {
             if( a.primary_value > b.primary_value ) return -add
             else if ( a.primary_value < b.primary_value ) return add
-        }else if(selectValue == "Secondary Value") {
+        }else if(selectValue == _this.metadata["secondary-value-label"]) {
             if( a.secondary_value > b.secondary_value ) return -add
             else if ( a.secondary_value < b.secondary_value ) return add
         }
