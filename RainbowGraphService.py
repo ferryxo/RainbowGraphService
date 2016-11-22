@@ -84,7 +84,7 @@ def file_upload():
             highlight_top_most_bar = True
             best = 10
             worst = 0
-            color_scheme = "10b"
+            color_scheme = "11b"
             reader = csv.reader(file, dialect="excel")
 
             cpr_data = list(reader)
@@ -359,8 +359,8 @@ def configure():
     cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
     con.commit()
 
-    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
-    #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
+    #return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
@@ -397,5 +397,5 @@ def visualize(id):
 
 if __name__ == '__main__':
     setup_sql_lite_db()
-    #app.run(host='127.0.0.1', port=3005, threaded=True)
-    app.run(host='0.0.0.0', port=3005, threaded=True)
+    app.run(host='127.0.0.1', port=3005, threaded=True)
+    #app.run(host='0.0.0.0', port=3005, threaded=True)

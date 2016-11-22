@@ -11,15 +11,20 @@ function RainbowGraph(data) {
     this.rankings = [];
     this.allrankings = [];
     this.dropdown = null;
+    this.min_rank_val = Number.MAX_SAFE_INTEGER;
+    this.max_rank_val = 0;
+    this.min_primary_val = Number.MAX_SAFE_INTEGER;
+    this.max_primary_val = 0;
+    this.duration = 1000;
+
 
 }
 
 RainbowGraph.prototype.parseData = function () {
     //=====================================this needs to be replaced later=====================
-    min_rank_val = Number.MAX_SAFE_INTEGER;
-    max_rank_val = 0;
-    min_primary_val = Number.MAX_SAFE_INTEGER;
-    max_primary_val = 0;
+
+    this.duration = Math.round (this.duration * this.jsonData[0].data.length / 45);
+
     p = 0
     for (var i = 0; i < this.jsonData[0].data.length; i++) {
         this.rankings[i] = []
@@ -32,11 +37,12 @@ RainbowGraph.prototype.parseData = function () {
             rank_val.first_name = this.jsonData[0].data[i].first_name;
             rank_val.x_pos = 0;
             this.allrankings[p] = rank_val
-            if (min_rank_val > this.allrankings[p].value) {
-                min_rank_val = this.allrankings[p.value];
+
+            if (this.min_rank_val > this.allrankings[p].value) {
+                this.min_rank_val = this.allrankings[p.value];
             }
-            if (max_rank_val < this.allrankings[p].value && this.allrankings[p].value != Number.MAX_SAFE_INTEGER) {
-                max_rank_val = this.allrankings[p].value;
+            if (this.max_rank_val < this.allrankings[p].value && this.allrankings[p].value != Number.MAX_SAFE_INTEGER) {
+                this.max_rank_val = this.allrankings[p].value;
             }
             p++;
         }
@@ -44,22 +50,31 @@ RainbowGraph.prototype.parseData = function () {
         this.rankings[i].secondary_value = this.jsonData[0].data[i].secondary_value;
         this.rankings[i].first_name = this.jsonData[0].data[i].first_name;
         this.rankings[i].x_pos = 0;
-        if (min_primary_val > this.rankings[i].primary_value) {
-            min_primary_val = Math.floor(this.rankings[i].primary_value);
-        }
-        if (max_primary_val < this.rankings[i].primary_value && this.rankings[i].primary_value != Number.MAX_SAFE_INTEGER) {
-            max_primary_val = Math.ceil(this.rankings[i].primary_value);
-        }
 
+
+        if (this.min_primary_val > this.rankings[i].primary_value) {
+            this.min_primary_val = Math.floor(this.rankings[i].primary_value);
+        }
+        if (this.max_primary_val < this.rankings[i].primary_value && this.rankings[i].primary_value != Number.MAX_SAFE_INTEGER) {
+            this.max_primary_val = Math.ceil(this.rankings[i].primary_value);
+        }
+    }
+    //if best & worst values are given in json, use them instead of the min and max in the data
+    if (this.metadata["best-value-possible"] != undefined && this.metadata["worst-value-possible"] != undefined) {
+        this.min_rank_val = Math.min(this.metadata["best-value-possible"], this.metadata["worst-value-possible"]);
+        this.max_rank_val = Math.max(this.metadata["best-value-possible"], this.metadata["worst-value-possible"]);
     }
 
-    console.debug(min_primary_val, max_primary_val, min_rank_val, max_rank_val);
+    if (this.metadata["worst-primary-value-possible"] != undefined && this.metadata["best-primary-value-possible"] != undefined) {
+        this.max_primary_val = Math.min(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
+        this.max_primary_val = Math.max(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
+    }
 }
 
 RainbowGraph.prototype.buildChart = function () {
 
     var _this = this;
-    rankScale = Math.abs(this.metadata['worst-value-possible'] - this.metadata['best-value-possible'] + 1);
+    rankScale = this.max_rank_val - this.min_rank_val + 1;
 
     var labels = "";
 
@@ -90,10 +105,10 @@ RainbowGraph.prototype.buildChart = function () {
     // if best-worst primary values are not defined, then take the min max from the data for the Y domain
 
     //flip the Y axis
-    if (this.metadata['higher_primary_value_better'])
-        y.domain([min_primary_val - 0.5, max_primary_val]);
+    if (this.metadata['higher-primary-value-better'])
+        y.domain([this.min_primary_val - 0.5, this.max_primary_val]);
     else
-        y.domain([max_primary_val + 0.5, min_primary_val]);
+        y.domain([this.max_primary_val + 0.5, this.min_primary_val]);
 
 
     //If the user has not use brushing yet, this will make sure _this all the students are being shown in the main graph.
@@ -138,7 +153,7 @@ RainbowGraph.prototype.buildChart = function () {
         .attr("dy", -5)
 
     gx.transition()
-        .duration(1000)
+        .duration(this.duration)
         .attr("transform", "rotate(-90)")
         .call(xAxis)
 
@@ -247,9 +262,11 @@ RainbowGraph.prototype.buildChart = function () {
                 p5++;
                 t5 = 1;
             }
+
             if (_this.metadata["highlight-top-most-bar"] && t5 == 1)
                 color = _this.colorLuminance(color, 0.3)
 
+            //console.debug("index : " + color_index + " color : " + color)
             return color;
         })
         .attr("rx", 8)
@@ -273,7 +290,7 @@ RainbowGraph.prototype.buildChart = function () {
     p6=0;
     t6=0
     bar.transition()
-        .duration(800)
+        .duration(this.duration)
         .attr("x", function (d, i) {
             t6++;
 
@@ -338,7 +355,7 @@ RainbowGraph.prototype.visualizeGraph = function(){
 RainbowGraph.prototype.onSortByChange = function(obj) {
 
     var _this = obj;
-    add =  _this.metadata['higher_primary_value_better']? 1 : -1
+    add =  _this.metadata['higher-primary-value-better']? 1 : -1
 
     selectValue = d3.select('select').property('value');
     _this.rankings.sort(function(a, b) {
