@@ -209,7 +209,7 @@ RainbowGraph.prototype.buildChart = function () {
                 }
             }
             //cconsole.log(t3+"position = "+_this.rankings[p3].x_pos);
-            return _this.rankings[p3].x_pos;
+            return _this.rankings[t3].x_pos;
         })
         .attr("width", function () {
             return width / _this.rankings.length
@@ -295,44 +295,37 @@ RainbowGraph.prototype.buildChart = function () {
                     p6++;
                 }
             }
-            _this.rankings[p6].x_pos = ((width / _this.rankings.length) * (p6))
             return ((width / _this.rankings.length) * (p6));
         })
 
 //self assessment bars
-    t=-1;
-    p=0;
-    min=0;
-    ts=-1;
+    min = 0;
     add =  _this.metadata['higher-primary-value-better']? 1 : -1;
     sasBodyBar = this.svg.selectAll(".sasBodyBar")
         .data(this.rankings)
         .enter().append("rect")
         .attr("x", function (d, i) {
-            ++p6;
-            return ((width / _this.rankings.length) * (p6));
+            return _this.rankings[i].x_pos;
         })
         .attr("width", function () {
             return width / _this.rankings.length
         })
         .attr("y", function (d, i) {
-            t++;
-            return y(_this.rankings[t].sas) + (8*add);
+            return y(_this.rankings[i].sas) + (8*add);
         })
         .attr("height", function (d, i) {
-           ++ts;
             //set the starting value for the grey box to the primary val, unless it's 0 then start where the Y-axis starts.
-           min = (_this.rankings[ts].primary_value == 0? _this.rankings[ts].primary_value - (0.5 * add) : _this.rankings[ts].primary_value);
+           min = (_this.rankings[i].primary_value == 0? _this.rankings[i].primary_value - (0.5 * add) : _this.rankings[i].primary_value);
            min = min + (0.1 * add)
             if(add){
-                if(_this.rankings[ts].sas > min){
-                    return (y(min) - y(_this.rankings[ts].sas) )
+                if(_this.rankings[i].sas > min){
+                    return (y(min) - y(_this.rankings[i].sas) )
                 }else{
                     return (0);
                 }
             }else{
-                if(_this.rankings[ts].sas < min){
-                        return (y(min) -y(_this.rankings[ts].sas))
+                if(_this.rankings[i].sas < min){
+                        return (y(min) -y(_this.rankings[i].sas))
                 }else{
                     return (0);
                 }
@@ -361,42 +354,29 @@ RainbowGraph.prototype.buildChart = function () {
         })
 
 
-
-    p6=-1;
-    t6=0
-    t3=0
     sasBodyBar.transition()
         .duration(this.duration)
         .attr("x", function (d, i) {
-        ++p6;
-          return ((width / _this.rankings.length) * (p6));
+            return ((width / _this.rankings.length) * (i));
         })
 
-   t=-1;
-   t2=-1;
    sasTopBar = this.svg.selectAll(".sasTopBar")
         .data(this.rankings)
         .enter().append("rect")
         .attr("x", function (d, i) {
-
-          ++p6;
-          return ((width / _this.rankings.length) * (p6));
-
+            return _this.rankings[i].x_pos;
         })
         .attr("width", function () {
             return width / _this.rankings.length
         })
         .attr("y", function (d, i) {
-            t++;
-            return y(_this.rankings[t].sas);
-
+            return y(_this.rankings[i].sas);
         })
         .attr("height", function (d, i) {
             return 15;
         })
-        .style("fill", function(){
-            t2++;
-            if(_this.rankings[t2].sas > _this.rankings[t2].primary_value)
+        .style("fill", function(d, i){
+            if(_this.rankings[i].sas > _this.rankings[i].primary_value)
                 return "grey"
             else
                 return "white"
@@ -424,16 +404,11 @@ RainbowGraph.prototype.buildChart = function () {
             tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px");
         })
 
-
-
-    p6=-1;
-    t6=0
-    t3=0
     sasTopBar.transition()
         .duration(this.duration)
         .attr("x", function (d, i) {
-        ++p6;
-          return ((width / _this.rankings.length) * (p6));
+            _this.rankings[i].x_pos = ((width / _this.rankings.length) * (i))
+            return _this.rankings[i].x_pos;
         })
 
 
