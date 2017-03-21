@@ -14,7 +14,6 @@ import sys
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
-
 # first file logger
 instructor_logger = logging.getLogger('instructor_logger')
 hdlr_1 = logging.FileHandler('instructor.log')
@@ -86,8 +85,7 @@ def file_upload():
             highlight_top_most_bar = True
             best = 10
             worst = 0
-            color_scheme = "10b"
-
+            color_scheme = "11b"
             reader = csv.reader(file, dialect="excel")
 
             cpr_data = list(reader)
