@@ -14,6 +14,7 @@ import sys
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
+
 # first file logger
 instructor_logger = logging.getLogger('instructor_logger')
 hdlr_1 = logging.FileHandler('instructor.log')
@@ -75,6 +76,7 @@ def file_upload():
 
         #check if this is CPR data file
         if "Assignment =" in header1 and "Time =" in header2:
+            #setup metadata for CPR
             higher_primary_value_better = True
             primary_value_label = "Average Rate"
             secondary_value_label =	"Controversy"
@@ -85,6 +87,7 @@ def file_upload():
             best = 10
             worst = 0
             color_scheme = "10b"
+
             reader = csv.reader(file, dialect="excel")
 
             cpr_data = list(reader)
