@@ -36,23 +36,6 @@ RainbowGraph.prototype.parseData = function () {
             return 1;
         return 0;
     }
-    /*
-    var c_cnt=0;
-    if(this.useCritComparer) {
-        compIndex=0;
-        for (var c_cnt = 0; c_cnt < this.jsonData[0].data.length; c_cnt++){
-            //t_array =this.jsonData[0].data[c_cnt].values;
-            sorted_comparer=this.jsonData[0].data[c_cnt].critcomparer;
-            sorted_comparer.sort(sorter);
-            for(var k=0; k<sorted_comparer.length; k++){
-                if(sorted_comparer[k].rank==0){
-                    continue;
-                }
-                this.crit_comparer[compIndex] = sorted_comparer[k];
-                ++compIndex;
-            }
-        }
-    }*/
 
     //grab all score data
     var allrankingIndex = 0;
@@ -163,26 +146,30 @@ RainbowGraph.prototype.buildChart = function () {
 
     //If the user has not use brushing yet, this will make sure _this all the students are being shown in the main graph.
     if (this.brushCheck == false) {
+        // If no student names are specified in the json file, d3 needs something unique on x-axis to plot the graph.
+        // In _this case, it would be column_url. Also note _this we this.hideLabels as we dont want to show column_url in this case.
+
         x = d3.scale.ordinal()
-            .rangeBands([0, width]);
+            .rangeBands([0, width])
+            .domain(_this.rankings.map(function (d, i){
+                return i; //return only the index, as it has to be unique
+            }));
 
         xAxis = d3.svg.axis()
             .scale(x)
+            .tickFormat(function(i){ //relabel the x-axis
+                d = _this.rankings[i];
+                if (d.last_name != undefined && d.first_name != undefined )
+                     return d.last_name + ', ' + d.first_name;
+                else if (d.last_name != undefined)
+                     return d.last_name
+                else if (d.first_name != undefined)
+                     return d.first_name
+                else
+                     return (d.column_url);
+            })
             .orient("bottom");
 
-        // If no student names are specified in the json file, d3 needs something unique on x-axis to plot the graph.
-        // In _this case, it would be column_url. Also note _this we this.hideLabels as we dont want to show column_url in this case.
-        //TODO: Why does it not require column_url in return statement. It still works if it does not return.
-        x.domain(this.rankings.map(function (d, i) {
-                if (d.last_name != undefined && d.first_name != undefined )
-                    return d.last_name + ', ' + d.first_name;
-                if (d.last_name != undefined)
-                    return d.last_name
-                if (d.first_name != undefined)
-                    return d.first_name
-                else
-                    return (d.column_url);
-        }));
     }
 
     this.svg = d3.select("body").append("svg")
@@ -338,6 +325,7 @@ RainbowGraph.prototype.buildChart = function () {
         })
 
     function showReviewerDataOnMouseOver() {
+        var radius = 7
         crit_data = this.getAttribute("crit_comp").split("|");
         stags = document.getElementsByClassName("s_rect");
         sas_tags = document.getElementsByClassName("sas");
@@ -354,15 +342,17 @@ RainbowGraph.prototype.buildChart = function () {
         for (ih = 0; ih < stags.length; ih++) {
             if (parseInt(stags[ih].getAttribute("stu_id")) == crit_data[0]) {
                 //console.log("found reviewer in stags: " + stags[ih].getAttribute("stu_id"))
+                stags[ih].style.opacity = 1; //uncomment this to highlight the reviewer ranks
                 var circleSelection = _this.svg.append("circle")
                     .attr("cx", function () {
-                        var tem = parseFloat(stags[ih].getAttribute("x")) + parseFloat(13.0);
-                        return tem;
+                        return parseFloat(stags[ih].getAttribute("x")) + parseFloat(stags[ih].getAttribute("width"))/2 ;
                     })
                     .attr("cy", .6 * window.innerHeight)
-                    .attr("r", 5)
+                    .attr("r", radius)
                     .attr("class", "s_circle")
-                    .style("fill", "red");
+                    .style("fill", "purple")
+                    .style("stroke", "white")
+                    .style("stroke-width", ".5");
             }
         }
 
@@ -379,13 +369,14 @@ RainbowGraph.prototype.buildChart = function () {
                         stags[ih].style.opacity = 1;
                         var circleSelection = _this.svg.append("circle")
                             .attr("cx", function () {
-                                var tem = parseFloat(stags[ih].getAttribute("x")) + parseFloat(13.0);
-                                return tem;
+                                return parseFloat(stags[ih].getAttribute("x")) + parseFloat(stags[ih].getAttribute("width"))/2 ;
                             })
                             .attr("cy", .6 * window.innerHeight)
-                            .attr("r", 5)
+                            .attr("r", radius)
                             .attr("class", "s_circle")
-                            .style("fill", "green");
+                            .style("fill", "blue")
+                            .style("stroke", "white")
+                            .style("stroke-width", ".5");
                     }
                 }
             }
@@ -1145,7 +1136,7 @@ RainbowGraph.prototype.buildChart = function () {
         .style("fill", "black")
         .style("stroke", "red")
         .style("stroke-width", ".5")
-        .style("opacity", 0.3)
+        .style("opacity", 0.1)
         .style("z-index", "7")
         .on("mouseover", function (d) {
 
@@ -1190,15 +1181,10 @@ RainbowGraph.prototype.buildChart = function () {
         })
         .attr("class", "sas")
         .style("fill", function(d, i){
-            if((_this.rankings[i].sas > _this.rankings[i].primary_value && higher_better) ||
-                (_this.rankings[i].sas < _this.rankings[i].primary_value && !higher_better)
-            )
-                return "grey"
-            else
-                return "white"
+                return "#3f3f3f"
         })
-        .style("stroke", "red")
-        .style("stroke-width", ".5")
+        .style("stroke", "white")
+        .style("stroke-width", "1")
         .style("opacity", 1)
         .style("z-index", "8")
         .attr("rx", 8)
@@ -1287,16 +1273,22 @@ RainbowGraph.prototype.onSortByChange = function(obj) {
     //sort rankings
     _this.rankings.sort(function(a, b) {
         if(selectValue == _this.metadata["x-axis-label"]){
-            if(a.first_name != "" )
+            if(a.last_name != undefined )
+                return a.last_name.toLowerCase().localeCompare( b.last_name.toLowerCase());
+            else if (a.first_name != undefined)
                 return a.first_name.toLowerCase().localeCompare( b.first_name.toLowerCase());
-            else if (a.first_name == "" && b.first_name == "")
-                return 0;
         }else if(selectValue == _this.metadata["primary-value-label"]) {
-            if( a.primary_value > b.primary_value ) return -higher_better
-            else if ( a.primary_value < b.primary_value ) return higher_better
+            if( a.secondary_value != undefined && b.secondary_value != undefined)
+                if( a.primary_value > b.primary_value )
+                    return -higher_better
+                else if ( a.primary_value < b.primary_value )
+                    return higher_better
         }else if(selectValue == _this.metadata["secondary-value-label"]) {
-            if( a.secondary_value > b.secondary_value ) return -higher_better
-            else if ( a.secondary_value < b.secondary_value ) return higher_better
+            if( a.secondary_value != undefined && b.secondary_value != undefined)
+                if( a.secondary_value > b.secondary_value )
+                    return -higher_better
+                else if ( a.secondary_value < b.secondary_value )
+                    return higher_better
         }
         return 0;
     });
