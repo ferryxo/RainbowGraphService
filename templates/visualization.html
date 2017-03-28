@@ -15,16 +15,16 @@
 <script>
     jsonData = JSON.parse({{ json_data|tojson|safe }})
     rc = new RainbowGraph(jsonData);
+    rc.visualizeGraph();
     //resize when the action is finished
     var resizeTimer;
     var redraw = function() {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
-            rc.visualizeGraph();
+            rc.buildChart();
         }, 400);
     }
     window.onresize=redraw;
-    window.onload=redraw;
 </script>
 
 </body>
