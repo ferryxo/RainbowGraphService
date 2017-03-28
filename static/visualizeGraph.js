@@ -963,21 +963,15 @@ RainbowGraph.prototype.buildChart = function () {
                             })
                             .attr("class", "sas")
                             .style("fill", function(d, i){
-                                if((_this.rankings[i].sas > _this.rankings[i].primary_value && higher_better) ||
-                                    (_this.rankings[i].sas < _this.rankings[i].primary_value && !higher_better)
-                                )
-                                    return "grey"
-                                else
-                                    return "white"
+                                return "#373737"
                             })
-                            .style("stroke", "red")
+                            .style("stroke", "white")
                             .style("stroke-width", ".5")
                             .style("opacity", 1)
                             .style("z-index", "8")
                             .attr("rx", 8)
                             .attr("ry", 8)
                             .on("mouseover", function (d) {
-
                                 this.original_color = this.style.fill;
                                 this.style.fill = "gray"
                                 tooltip.text("self-assessement" + ":" + d.sas );
@@ -1133,7 +1127,7 @@ RainbowGraph.prototype.buildChart = function () {
                 }
             }
         })
-        .style("fill", "black")
+        .style("fill", "3f3f3f")
         .style("stroke", "red")
         .style("stroke-width", ".5")
         .style("opacity", 0.1)
