@@ -1127,10 +1127,10 @@ RainbowGraph.prototype.buildChart = function () {
                 }
             }
         })
-        .style("fill", "3f3f3f")
+        .style("fill", "6d6d6d")
         .style("stroke", "red")
         .style("stroke-width", ".5")
-        .style("opacity", 0.1)
+        .style("opacity", 0.2)
         .style("z-index", "7")
         .on("mouseover", function (d) {
 
