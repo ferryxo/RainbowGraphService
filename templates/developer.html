@@ -49,21 +49,19 @@
             }
 
             function expandFrame(){
-                document.getElementById("frameContent").style.display = "block";
+                document.getElementById("frameContentHolder").style.display = "block";
                 document.getElementById("frameHeader").innerHTML = "collapse";
             }
             function hideFrame(){
-                document.getElementById("frameContent").style.display = "none";
+                document.getElementById("frameContentHolder").style.display = "none";
                 document.getElementById("frameHeader").innerHTML = "expand";
             }
 
             function toggle() {
-                if( document.getElementById("frameContent").style.display == "block") {
+                if( document.getElementById("frameContentHolder").style.display == "block")
                    hideFrame();
-                }
-                else {
+                else
                     expandFrame();
-                }
             }
 
             function copyToClipboard(elem) {
@@ -1832,10 +1830,9 @@
         </div>
         &nbsp;
         <div class="form-container" >
-            <a id="frameHeader" class="form-title" href="javascript:toggle('frameContent','frameHeader');" style="text-align:right">expand</a>
-            <div id="frameContentHolder">
-                <iframe id="frameContent" name="_frameContent" src="about:blank" width="800" height="380" frameborder="0" scrolling="no" style="display:none;"></iframe>
-                </br>
+            <a id="frameHeader" class="form-title" href="javascript:toggle();">expand</a>
+            <div id="frameContentHolder" style="display:none;">
+                <iframe name="_frameContent" src="about:blank" width="800" height="380" frameborder="0" scrolling="no"></iframe>
                 <div id="htmlCopyHolder" class="form-text"></div>
             </div>
         </div>
