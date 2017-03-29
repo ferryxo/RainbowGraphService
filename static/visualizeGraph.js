@@ -456,6 +456,12 @@ RainbowGraph.prototype.buildChart = function () {
                     } else {
                         return (0);
                     }
+                }else{
+                    if(_this.rankings[i].sas < min) {
+                        return (y(min) - y(_this.rankings[i].sas))
+                    }else{
+                        return (0);
+                    }
                 }
             })
             .style("fill", "6d6d6d")
