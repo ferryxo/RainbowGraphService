@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from flask_api import status
 from flask_cors import CORS, cross_origin
+
 import uuid
 import json
 import xlrd
@@ -10,7 +11,7 @@ import logging
 
 import sqlite3 as sqllite
 import sys
-
+import yaml
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
@@ -30,6 +31,10 @@ debug_logger.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 CORS(app)
+
+global cfg
+with open("config_file.yml", 'r') as ymlfile:
+    cfg = yaml.load(ymlfile)
 
 configTable = {}
 cur = None
@@ -360,7 +365,7 @@ def configure():
     cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
     con.commit()
 
-    return jsonify(url="http://peerlogic.csc.ncsu.edu/rainbowgraph/viz/" + id.urn[9:])
+    return jsonify(url=cfg['SERVER_URL'] + "/viz/" + id.urn[9:])
     #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
