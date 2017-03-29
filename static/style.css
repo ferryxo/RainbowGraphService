@@ -65,6 +65,15 @@ font-size: 9px;
   shape-rendering: crispEdges;
 }
 
+.boxed {
+  border: 1px solid #725129 ;
+  background:  #f2e3d2;
+  width:700px;
+    align:center;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+}
 
 .form-container {
    border: 1px solid #f2e3d2;

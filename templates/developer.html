@@ -42,10 +42,11 @@
             }
 
             function showHtmlCopy(url){
-                document.getElementById("htmlCopyHolder").innerHTML =
+                document.getElementById("htmlCopyTitle").innerHTML =
                         "The Rainbow Graph can be embedded to your web by using the following IFRAME tag."
-                        + "<br> Copy the following tag to your web and adjust the attribute like the width & height <br>"
-                        + "<br><code>&lt;iframe id=&quot;rainbowGraph&quot; src=&quot;" + url + "&quot; width=&quot;800&quot; height=&quot;380&quot; frameborder=&quot;0&quot; scrolling=&quot;no&quot;&gt;&lt;/iframe&gt;</code>";
+                        + "<br> Copy the following tag to your web and adjust the attribute like the width & height <br>";
+                document.getElementById("htmlCopyHolder").innerHTML =
+                        + "&lt;iframe id=&quot;rainbowGraph&quot; src=&quot;" + url + "&quot; width=&quot;800&quot; height=&quot;380&quot; frameborder=&quot;0&quot; scrolling=&quot;no&quot;&gt;&lt;/iframe&gt;";
             }
 
             function expandFrame(){
@@ -1833,7 +1834,8 @@
             <a id="frameHeader" class="form-title" href="javascript:toggle();">expand</a>
             <div id="frameContentHolder" style="display:none;">
                 <iframe name="_frameContent" src="about:blank" width="800" height="380" frameborder="0" scrolling="no"></iframe>
-                <div id="htmlCopyHolder" class="form-text"></div>
+                <div id="htmlCopyTitle" class="form-text"></div>
+                <div id="htmlCopyHolder" class="boxed"></div>
             </div>
         </div>
 
