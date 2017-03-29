@@ -120,6 +120,15 @@ font-size: 9px;
    color: #725129;
    text-shadow: #fdf2e4 0 1px 0;
    }
+
+.form-text {
+   color: #725129;
+   font-family: helvetica, serif;
+   padding: 8.5px 18px;
+   font-size: 12px;
+   text-decoration: none;
+   }
+
 .submit-container {
    margin:8px 0;
    text-align:right;
@@ -193,3 +202,4 @@ font-size: 9px;
   vertical-align: text-bottom;
   width: 300px;
 }
+
