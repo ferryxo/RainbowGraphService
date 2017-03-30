@@ -60,6 +60,7 @@ RainbowGraph.prototype.parseData = function () {
             rank_val.primary_value = this.jsonData[0].data[i].primary_value;
             rank_val.secondary_value = this.jsonData[0].data[i].secondary_value;
             rank_val.first_name = this.jsonData[0].data[i].first_name;
+            rank_val.last_name = this.jsonData[0].data[i].last_name;
             rank_val.stu_id = this.jsonData[0].data[i].studentID;
             rank_val.x_pos = 0;
             //get crit comparer data if they're available. Attach them to the flatened allrankings[i]
@@ -80,6 +81,7 @@ RainbowGraph.prototype.parseData = function () {
         this.rankings[i].primary_value = this.jsonData[0].data[i].primary_value; //rank avg corresponds to primary value in json file for each student
         this.rankings[i].secondary_value = this.jsonData[0].data[i].secondary_value;
         this.rankings[i].first_name = this.jsonData[0].data[i].first_name;
+        this.rankings[i].last_name = this.jsonData[0].data[i].last_name;
         this.rankings[i].x_pos = 0;
         this.rankings[i].sas = this.jsonData[0].data[i].sas;
         this.rankings[i].stu_id = this.jsonData[0].data[i].studentID;
@@ -601,7 +603,7 @@ RainbowGraph.prototype.onSortByChange = function(obj) {
         if(selectValue == _this.metadata["x-axis-label"]){
             if(a.last_name != undefined )
                 return a.last_name.toLowerCase().localeCompare( b.last_name.toLowerCase());
-            else if (a.first_name != undefined)
+            else if (a.last_name != undefined)
                 return a.first_name.toLowerCase().localeCompare( b.first_name.toLowerCase());
         }else if(selectValue == _this.metadata["primary-value-label"]) {
             if( a.secondary_value != undefined && b.secondary_value != undefined)
@@ -628,6 +630,7 @@ RainbowGraph.prototype.onSortByChange = function(obj) {
             rank_val.primary_value = _this.rankings[i].primary_value;
             rank_val.secondary_value = _this.rankings[i].secondary_value;
             rank_val.first_name = _this.rankings[i].first_name;
+            rank_val.last_name = _this.rankings[i].last_name;
             rank_val.x_pos = _this.rankings[i].x_pos;
             rank_val.sas = _this.rankings[i].sas;
             rank_val.stu_id = _this.rankings[i].stu_id;
