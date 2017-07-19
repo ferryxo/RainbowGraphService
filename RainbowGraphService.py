@@ -12,6 +12,7 @@ import logging
 import sqlite3 as sqllite
 import sys
 import yaml
+#from urlparse import urlparse
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 
@@ -68,7 +69,8 @@ def index():
 def file_upload():
     file = request.files['file']
     color_scheme = "5b"
-    highlight_top_most_bar = False
+    sas = "yes"
+    crit_comparer = "no"
 
     #check type of the files, find a way to check the header
     if file.filename.endswith(".csv"):
@@ -87,7 +89,8 @@ def file_upload():
             values_label = "Rating"
             y_axis_label =	"Average Rate"
             x_axis_label =	"Students"
-            highlight_top_most_bar = True
+            sas = "yes"
+            crit_comparer = "no"
             best = 10
             worst = 0
             color_scheme = "11b"
@@ -112,7 +115,6 @@ def file_upload():
                     break
 
 
-
             for row in range(1, len(cpr_data)):
                 author_id = cpr_data[row][0]
                 author_name = cpr_data[row][2]
@@ -120,6 +122,7 @@ def file_upload():
                 cpi = cpr_data[row][5]
                 current_score = cpr_data[row][last_row-2]
                 primary_val = cpr_data[row][3].split("/")[0]
+
 
                 if reviewer != '':
                     #handle peer assessment scores
@@ -150,7 +153,8 @@ def file_upload():
                             "column_url": "",
                             "primary_value": float(prev_primary_val),
                             "secondary_value": stdev,
-                            "values": current_author_scores
+                            "values": current_author_scores,
+                            "sas": last_self_review_score
                         }
 
                         list_of_author_json_conf.append(element_prev_author)
@@ -198,6 +202,8 @@ def file_upload():
             best = 7
             worst = 0
             color_scheme = "7b"
+            sas = "no"
+            crit_comparer = "no"
 
             authors_scores={}
             list_of_author_json_conf = []
@@ -264,6 +270,8 @@ def file_upload():
             worst = 5
             color_scheme = "5b"
             higher_primary_value_better = True
+            sas = "yes"
+            crit_comparer = "yes"
 
             #find the relevant columns
             fname_col = 0
@@ -326,17 +334,20 @@ def file_upload():
 
     config = {
         "metadata": {
-                    "primary_value_label": primary_value_label,
-                    "higher_primary_value_better": higher_primary_value_better,
-                    "values_label": values_label,
+                    "primary-value-label": primary_value_label,
+                    "higher-primary-value-better": higher_primary_value_better,
+                    "values-label": values_label,
                     "higher-values-better": False,
-                    "best_value_possible": best,
-                    "worst_value_possible": worst,
-                    "y_axis_label": y_axis_label,
-                    "x_axis_label": x_axis_label,
-                    "color_scheme": color_scheme,
-                    "secondary_value_label": secondary_value_label,
-                    "highlight_top_most_bar": highlight_top_most_bar
+                    "best-value-possible": best,
+                    "best-primary-value-possible":best,
+                    "worst-value-possible": worst,
+                    "worst-primary-value-possible": worst,
+                    "y-axis-label": y_axis_label,
+                    "x-axis-label": x_axis_label,
+                    "color-scheme": color_scheme,
+                    "secondary-value-label": secondary_value_label,
+                    "sas": sas,
+                    "crit_comparer": crit_comparer
             },
             "data": data
         }
@@ -372,15 +383,30 @@ def configure():
 @cross_origin()
 def visualize(id):
  global cur, conn
+ # load from file:
+ # try:
+ #   with open('configTable.json', 'r+') as f:
+ #       configTable = json.load(f)
+ #    # if the file is empty the ValueError will be thrown
+ # except ValueError:
+ #   configTable = {}
+ # config = configTable.get(id)
 
  if request.method == 'DELETE':
+    # f.close()
+    # configTable.pop(id, None)
+    # with open('configTable.json', 'w+') as f:
+    #     json.dump(configTable, f)
+
     cur.execute("DELETE FROM Config WHERE id='" + id + "'")
     con.commit()
+
     return "", status.HTTP_200_OK
  else:
      cur.execute("SELECT json FROM Config WHERE id='" + id + "'")
      rows = cur.fetchall()
 
+     # if config == None
      if len(rows) == 0:
          return jsonify(error="Shoot.. I couldn't find the config data")
      else:

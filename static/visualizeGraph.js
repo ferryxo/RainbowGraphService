@@ -60,6 +60,8 @@ RainbowGraph.prototype.parseData = function () {
             rank_val.primary_value = this.jsonData[0].data[i].primary_value;
             rank_val.secondary_value = this.jsonData[0].data[i].secondary_value;
             rank_val.first_name = this.jsonData[0].data[i].first_name;
+            rank_val.last_name = this.jsonData[0].data[i].last_name;
+            rank_val.stu_id = this.jsonData[0].data[i].studentID;
             rank_val.stu_id = this.jsonData[0].data[i].student_id;
             rank_val.x_pos = 0;
             //get crit comparer data if they're available. Attach them to the flatened all_rankings[i]
@@ -80,6 +82,7 @@ RainbowGraph.prototype.parseData = function () {
         this.rankings[i].primary_value = this.jsonData[0].data[i].primary_value; //rank avg corresponds to primary value in json file for each student
         this.rankings[i].secondary_value = this.jsonData[0].data[i].secondary_value;
         this.rankings[i].first_name = this.jsonData[0].data[i].first_name;
+        this.rankings[i].last_name = this.jsonData[0].data[i].last_name;
         this.rankings[i].x_pos = 0;
         this.rankings[i].self_assess_value = this.jsonData[0].data[i].self_assess_value;
         this.rankings[i].stu_id = this.jsonData[0].data[i].student_id;
@@ -99,7 +102,7 @@ RainbowGraph.prototype.parseData = function () {
     }
 
     if (this.metadata["worst-primary-value-possible"] != undefined && this.metadata["best-primary-value-possible"] != undefined) {
-        this.max_primary_val = Math.min(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
+        this.min_primary_val = Math.min(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
         this.max_primary_val = Math.max(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
     }
 
@@ -601,7 +604,7 @@ RainbowGraph.prototype.onSortByChange = function(obj) {
         if(selectValue == _this.metadata["x_axis_label"]){
             if(a.last_name != undefined )
                 return a.last_name.toLowerCase().localeCompare( b.last_name.toLowerCase());
-            else if (a.first_name != undefined)
+            else if (a.last_name != undefined)
                 return a.first_name.toLowerCase().localeCompare( b.first_name.toLowerCase());
         }else if(selectValue == _this.metadata["primary_value_label"]) {
             if( a.secondary_value != undefined && b.secondary_value != undefined)
@@ -628,6 +631,7 @@ RainbowGraph.prototype.onSortByChange = function(obj) {
             rank_val.primary_value = _this.rankings[i].primary_value;
             rank_val.secondary_value = _this.rankings[i].secondary_value;
             rank_val.first_name = _this.rankings[i].first_name;
+            rank_val.last_name = _this.rankings[i].last_name;
             rank_val.x_pos = _this.rankings[i].x_pos;
             rank_val.self_assess_value = _this.rankings[i].self_assess_value;
             rank_val.stu_id = _this.rankings[i].stu_id;
