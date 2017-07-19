@@ -326,17 +326,17 @@ def file_upload():
 
     config = {
         "metadata": {
-                    "primary-value-label": primary_value_label,
-                    "higher-primary-value-better": higher_primary_value_better,
-                    "values-label": values_label,
+                    "primary_value_label": primary_value_label,
+                    "higher_primary_value_better": higher_primary_value_better,
+                    "values_label": values_label,
                     "higher-values-better": False,
-                    "best-value-possible": best,
-                    "worst-value-possible": worst,
-                    "y-axis-label": y_axis_label,
-                    "x-axis-label": x_axis_label,
-                    "color-scheme": color_scheme,
-                    "secondary-value-label": secondary_value_label,
-                    "highlight-top-most-bar": highlight_top_most_bar
+                    "best_value_possible": best,
+                    "worst_value_possible": worst,
+                    "y_axis_label": y_axis_label,
+                    "x_axis_label": x_axis_label,
+                    "color_scheme": color_scheme,
+                    "secondary_value_label": secondary_value_label,
+                    "highlight_top_most_bar": highlight_top_most_bar
             },
             "data": data
         }
@@ -372,30 +372,15 @@ def configure():
 @cross_origin()
 def visualize(id):
  global cur, conn
- # load from file:
- # try:
- #   with open('configTable.json', 'r+') as f:
- #       configTable = json.load(f)
- #    # if the file is empty the ValueError will be thrown
- # except ValueError:
- #   configTable = {}
- # config = configTable.get(id)
 
  if request.method == 'DELETE':
-    # f.close()
-    # configTable.pop(id, None)
-    # with open('configTable.json', 'w+') as f:
-    #     json.dump(configTable, f)
-
     cur.execute("DELETE FROM Config WHERE id='" + id + "'")
     con.commit()
-
     return "", status.HTTP_200_OK
  else:
      cur.execute("SELECT json FROM Config WHERE id='" + id + "'")
      rows = cur.fetchall()
 
-     # if config == None
      if len(rows) == 0:
          return jsonify(error="Shoot.. I couldn't find the config data")
      else:

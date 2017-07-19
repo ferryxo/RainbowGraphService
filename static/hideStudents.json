@@ -1,15 +1,15 @@
 [{
 	"metadata": {
-		"primary-value-label": "rank average",
+		"primary_value_label": "rank average",
 		"higher_primary_value_better": false,
-		"values-label": "ranks",
+		"values_label": "ranks",
 		"higher_values_better": false,
-		"best-value-possible": 1,
-		"worst-value-possible": 5,
-		"y-axis-label": "Rank Average",
-		"x-axis-label": "Students",
-		"color-scheme": "3a",
-		"secondary-value-label": "variance"
+		"best_value_possible": 1,
+		"worst_value_possible": 5,
+		"y_axis_label": "Rank Average",
+		"x_axis_label": "Students",
+		"color_scheme": "3a",
+		"secondary_value_label": "variance"
 	},
 
 	"data": [{
