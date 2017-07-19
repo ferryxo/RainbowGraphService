@@ -154,7 +154,7 @@ def file_upload():
                             "primary_value": float(prev_primary_val),
                             "secondary_value": stdev,
                             "values": current_author_scores,
-                            "sas": last_self_review_score
+                            "self_assess_value": last_self_review_score
                         }
 
                         list_of_author_json_conf.append(element_prev_author)
@@ -334,19 +334,19 @@ def file_upload():
 
     config = {
         "metadata": {
-                    "primary-value-label": primary_value_label,
-                    "higher-primary-value-better": higher_primary_value_better,
-                    "values-label": values_label,
-                    "higher-values-better": False,
-                    "best-value-possible": best,
-                    "best-primary-value-possible":best,
-                    "worst-value-possible": worst,
-                    "worst-primary-value-possible": worst,
-                    "y-axis-label": y_axis_label,
-                    "x-axis-label": x_axis_label,
-                    "color-scheme": color_scheme,
-                    "secondary-value-label": secondary_value_label,
-                    "sas": sas,
+                    "primary_value_label": primary_value_label,
+                    "higher_primary_value_better": higher_primary_value_better,
+                    "values_label": values_label,
+                    "higher_values_better": False,
+                    "best_value_possible": best,
+                    "best_primary_value_possible":best,
+                    "worst_value_possible": worst,
+                    "worst_primary_value_possible": worst,
+                    "y_axis_label": y_axis_label,
+                    "x_axis_label": x_axis_label,
+                    "color_scheme": color_scheme,
+                    "secondary_value_label": secondary_value_label,
+                    "self_assess_flag": sas,
                     "crit_comparer": crit_comparer
             },
             "data": data

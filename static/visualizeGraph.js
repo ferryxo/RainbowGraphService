@@ -101,9 +101,9 @@ RainbowGraph.prototype.parseData = function () {
         this.max_rank_val = Math.max(this.metadata["best_value_possible"], this.metadata["worst_value_possible"]);
     }
 
-    if (this.metadata["worst-primary-value-possible"] != undefined && this.metadata["best-primary-value-possible"] != undefined) {
-        this.min_primary_val = Math.min(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
-        this.max_primary_val = Math.max(this.metadata["best-primary-value-possible"], this.metadata["worst-primary-value-possible"]);
+    if (this.metadata["worst_primary_value_possible"] != undefined && this.metadata["best_primary_value_possible"] != undefined) {
+        this.min_primary_val = Math.min(this.metadata["best_primary_value_possible"], this.metadata["worst_primary_value_possible"]);
+        this.max_primary_val = Math.max(this.metadata["best_primary_value_possible"], this.metadata["worst_primary_value_possible"]);
     }
 
 }
