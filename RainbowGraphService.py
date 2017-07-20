@@ -63,8 +63,8 @@ def setup_sql_lite_db():
 def index():
     return redirect('developer')
 
-def add_mobius_crit_comparer(group_members_ranks, list_of_author_json_conf):
-    team_members_json = list_of_author_json_conf[-len(group_members_ranks):]
+def add_mobius_crit_comparer(group_members_ranks, list_of_author_json_conf, is_last_group):
+    team_members_json = list_of_author_json_conf[-len(group_members_ranks):] if is_last_group else list_of_author_json_conf[-len(group_members_ranks)-1:len(group_members_ranks)]
 
     member_index = 0
     for member in team_members_json:
@@ -332,7 +332,7 @@ def file_upload():
             list_of_author_json_conf = []
 
             #critic_comparer_data
-            current_group_id = ""
+            last_group_id = ""
             group_members_ranks = {}
 
             for row in range(1, data_sheet.nrows):
@@ -377,14 +377,17 @@ def file_upload():
 
                 if data_sheet.cell(row, group_id_col).value != '':
                     group_id = data_sheet.cell(row, group_id_col).value
-                    if row == 1 or current_group_id == group_id:
-                        group_members_ranks[student_id] = ordered_author_ranks
-                        if row == 1:
-                            current_group_id = group_id
-                    if current_group_id != group_id or row == data_sheet.nrows-1:
-                        add_mobius_crit_comparer(group_members_ranks, list_of_author_json_conf)
+                    #if row == 1 or last_group_id == group_id:
+
+                    if last_group_id != group_id or row == data_sheet.nrows-1:
+                        #if this is a last group, then we need to add the last student to the membership
+                        if row == data_sheet.nrows-1:
+                            group_members_ranks[student_id] = ordered_author_ranks
+                        add_mobius_crit_comparer(group_members_ranks, list_of_author_json_conf, row == data_sheet.nrows-1)
                         group_members_ranks = {}
-                        current_group_id = group_id
+                    last_group_id = group_id
+                    #this is a member of the next group
+                    group_members_ranks[student_id] = ordered_author_ranks
 
         else:
             debug_logger.error("someone uploaded an xlsx file")
