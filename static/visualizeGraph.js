@@ -366,7 +366,7 @@ RainbowGraph.prototype.buildChart = function () {
         }
 
         for (ih = 0; ih < stags.length; ih++) {
-            if (parseInt(stags[ih].getAttribute("stu_id")) == crit_data[0]) {
+            if (stags[ih].getAttribute("stu_id") == crit_data[0]) {
                 //console.log("found reviewer in stags: " + stags[ih].getAttribute("stu_id"))
                 stags[ih].style.opacity = 1; //uncomment this to highlight the reviewer ranks
                 var circleSelection = _this.svg.append("circle")
@@ -387,7 +387,7 @@ RainbowGraph.prototype.buildChart = function () {
             ih = 0;
             stags = document.getElementsByClassName("s_rect");
             for (ih = 0; ih < stags.length; ih++) {
-                if (parseInt(stags[ih].getAttribute("stu_id")) == critic_peers[peer_cnt]) {
+                if (stags[ih].getAttribute("stu_id") == critic_peers[peer_cnt]) {
                     //console.log("found peer in stags: " + stags[ih].getAttribute("stu_id"))
                     peer_crit_data = stags[ih].getAttribute("crit_comp").split("|");
                     criticpeers = peer_crit_data[0];

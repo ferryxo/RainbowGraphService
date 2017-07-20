@@ -63,14 +63,39 @@ def setup_sql_lite_db():
 def index():
     return redirect('developer')
 
+def add_mobius_crit_comparer(group_members_ranks, list_of_author_json_conf):
+    team_members_json = list_of_author_json_conf[-len(group_members_ranks):]
+
+    member_index = 0
+    for member in team_members_json:
+        vector = []
+        reviewer_index = 0
+        for rank in group_members_ranks[member['student_id']]:
+            #reviewer_index = reviewer_index - len(team_members_json) if reviewer_index > len(team_members_json) else reviewer_index
+            if rank != '':
+                crit_id = team_members_json[reviewer_index]['student_id']
+                crit_peers = [s['student_id'] for s in team_members_json if s['student_id'] != crit_id]
+
+                vector_element = {
+                    "rank": rank,
+                    "critic_id": crit_id,
+                    "critic_peers": crit_peers
+                }
+                vector.append(vector_element)
+            reviewer_index += 1
+        member_index += 1
+        member['critic_comparer_vector'] = vector
+
+    return list_of_author_json_conf
+
 #TODO refactor exctract each file processing to a method
 @app.route('/file-upload', methods=['POST'])
 @cross_origin()
 def file_upload():
     file = request.files['file']
     color_scheme = "5b"
-    sas = "yes"
-    crit_comparer = "no"
+    sas_val = "yes"
+    critic_comparer_flag = "no"
 
     #check type of the files, find a way to check the header
     if file.filename.endswith(".csv"):
@@ -89,8 +114,8 @@ def file_upload():
             values_label = "Rating"
             y_axis_label =	"Average Rate"
             x_axis_label =	"Students"
-            sas = "yes"
-            crit_comparer = "no"
+            sas_val = "yes"
+            critic_comparer_flag = "no"
             best = 10
             worst = 0
             color_scheme = "11b"
@@ -202,8 +227,8 @@ def file_upload():
             best = 7
             worst = 0
             color_scheme = "7b"
-            sas = "no"
-            crit_comparer = "no"
+            sas_val = "no"
+            critic_comparer_flag = "no"
 
             authors_scores={}
             list_of_author_json_conf = []
@@ -270,14 +295,17 @@ def file_upload():
             worst = 5
             color_scheme = "5b"
             higher_primary_value_better = True
-            sas = "yes"
-            crit_comparer = "yes"
+            self_assess_flag = "yes"
+            critic_comparer_flag = "yes"
 
             #find the relevant columns
             fname_col = 0
             lname_col = 0
+            group_id_col = 0
+            student_id_col = 0
             rank_avg_col = 0
             rank_std_dev = 0
+            rank_self_assess_col = 0
             review_cols = []
 
             for col in range(0, data_sheet.ncols):
@@ -289,6 +317,12 @@ def file_upload():
                     rank_avg_col = col
                 elif data_sheet.cell(0, col).value == "ScrkStuSub_Cont":
                     rank_std_dev = col
+                elif data_sheet.cell(0, col).value == "GroupID":
+                    group_id_col = col
+                elif data_sheet.cell(0, col).value == "SystStudID":
+                    student_id_col = col
+                elif data_sheet.cell(0, col).value == "RankStuAr_S":
+                    rank_self_assess_col = col
                 elif data_sheet.cell(0, col).value.startswith("RankStuAr_"):
                     if data_sheet.cell(0, col).value.split("_")[1].isdigit():
                         review_cols.append(col)
@@ -296,33 +330,62 @@ def file_upload():
 
             #fetch the relevant data per row, append them to list_of_author_json_conf
             list_of_author_json_conf = []
+
+            #critic_comparer_data
+            current_group_id = ""
+            group_members_ranks = {}
+
             for row in range(1, data_sheet.nrows):
+
                 current_author_scores = []
                 avg = 0
                 std = 0
+                sas_val = 0
+                student_id = ''
 
+                if data_sheet.cell(row, student_id_col).value != '':
+                    student_id = data_sheet.cell(row, student_id_col).value
                 if data_sheet.cell(row, rank_avg_col).value != '':
                     avg = float(data_sheet.cell(row, rank_avg_col).value)
                 if data_sheet.cell(row, rank_std_dev).value != '':
                     std = float(data_sheet.cell(row, rank_std_dev).value)
+                if data_sheet.cell(row, rank_self_assess_col).value != '':
+                    sas_val = float(data_sheet.cell(row, rank_self_assess_col).value)
 
+                ordered_author_ranks = []
                 for i in range(0, len(review_cols)):
+                    ordered_author_ranks.append(data_sheet.cell(row, review_cols[i]).value)
                     if data_sheet.cell(row, review_cols[i]).value != '':
                         if (best > worst and float(data_sheet.cell(row, review_cols[i]).value)>=worst) or \
                                 worst > best and float(data_sheet.cell(row, review_cols[i]).value)>=best:
                             current_author_scores.append(float(data_sheet.cell(row, review_cols[i]).value))
+
 
                 current_author_scores = sorted(current_author_scores)
 
                 element_prev_author = {
                         "first_name": data_sheet.cell(row, fname_col).value,
                         "last_name": data_sheet.cell(row, lname_col).value,
-                        "column_url": "",
+                        "column_url": "#",
                         "primary_value": avg,
                         "secondary_value": std,
-                        "values": current_author_scores
+                        "self_assess_value": sas_val,
+                        "values": current_author_scores,
+                        "student_id": student_id
                     }
                 list_of_author_json_conf.append(element_prev_author)
+
+                if data_sheet.cell(row, group_id_col).value != '':
+                    group_id = data_sheet.cell(row, group_id_col).value
+                    if row == 1 or current_group_id == group_id:
+                        group_members_ranks[student_id] = ordered_author_ranks
+                        if row == 1:
+                            current_group_id = group_id
+                    if current_group_id != group_id or row == data_sheet.nrows-1:
+                        add_mobius_crit_comparer(group_members_ranks, list_of_author_json_conf)
+                        group_members_ranks = {}
+                        current_group_id = group_id
+
         else:
             debug_logger.error("someone uploaded an xlsx file")
             return jsonify(error="Uploaded file is currently not supported"), status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
@@ -346,8 +409,8 @@ def file_upload():
                     "x_axis_label": x_axis_label,
                     "color_scheme": color_scheme,
                     "secondary_value_label": secondary_value_label,
-                    "self_assess_flag": sas,
-                    "crit_comparer": crit_comparer
+                    "self_assess_flag": self_assess_flag,
+                    "critic_comparer_flag": critic_comparer_flag
             },
             "data": data
         }
@@ -377,27 +440,12 @@ def configure():
     con.commit()
 
     return jsonify(url=cfg['SERVER_URL'] + "/viz/" + id.urn[9:])
-    #return jsonify(url="http://127.0.0.1:3005/viz/" + id.urn[9:])
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
 def visualize(id):
  global cur, conn
- # load from file:
- # try:
- #   with open('configTable.json', 'r+') as f:
- #       configTable = json.load(f)
- #    # if the file is empty the ValueError will be thrown
- # except ValueError:
- #   configTable = {}
- # config = configTable.get(id)
-
  if request.method == 'DELETE':
-    # f.close()
-    # configTable.pop(id, None)
-    # with open('configTable.json', 'w+') as f:
-    #     json.dump(configTable, f)
-
     cur.execute("DELETE FROM Config WHERE id='" + id + "'")
     con.commit()
 
