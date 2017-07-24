@@ -67,6 +67,12 @@ RainbowGraph.prototype.parseData = function () {
             });
         }
 
+        //if best & worst values are given in json, use them instead of the min and max in the data
+        if (this.metadata["best_value_possible"] != undefined && this.metadata["worst_value_possible"] != undefined) {
+            this.min_rank_val = Math.min(this.metadata["best_value_possible"], this.metadata["worst_value_possible"]);
+            this.max_rank_val = Math.max(this.metadata["best_value_possible"], this.metadata["worst_value_possible"]);
+        }
+
 
         for (var j = 0; j < this.jsonData[0].data[i].values.length; j++) {
             if(this.jsonData[0].data[i].values[j] == 0)
@@ -88,12 +94,15 @@ RainbowGraph.prototype.parseData = function () {
 
             this.all_rankings[all_ranking_index] = rank_val
 
-            if (this.min_rank_val > this.all_rankings[all_ranking_index].value) {
-                this.min_rank_val = this.all_rankings[all_ranking_index.value];
-            }
-            if (this.max_rank_val < this.all_rankings[all_ranking_index].value && this.all_rankings[all_ranking_index].value != Number.MAX_SAFE_INTEGER) {
-                this.max_rank_val = this.all_rankings[all_ranking_index].value;
-            }
+            if (this.metadata["worst_value_possible"] == undefined)
+                if (this.min_rank_val > this.all_rankings[all_ranking_index].value) {
+                    this.min_rank_val = this.all_rankings[all_ranking_index].value;
+                }
+            if (this.metadata["best_value_possible"] == undefined)
+                if (this.max_rank_val < this.all_rankings[all_ranking_index].value && this.all_rankings[all_ranking_index].value != Number.MAX_SAFE_INTEGER) {
+                    this.max_rank_val = this.all_rankings[all_ranking_index].value;
+                }
+
             all_ranking_index++;
         }
 
@@ -107,23 +116,17 @@ RainbowGraph.prototype.parseData = function () {
         this.rankings[i].self_assess_value = this.jsonData[0].data[i].self_assess_value;
         this.rankings[i].stu_id = this.jsonData[0].data[i].student_id;
 
-        if (this.min_primary_val > this.rankings[i].primary_value) {
-            this.min_primary_val = Math.floor(this.rankings[i].primary_value);
+        if (this.metadata["worst_primary_value_possible"] != undefined && this.metadata["best_primary_value_possible"] != undefined) {
+            this.min_primary_val = Math.min(this.metadata["best_primary_value_possible"], this.metadata["worst_primary_value_possible"]);
+            this.max_primary_val = Math.max(this.metadata["best_primary_value_possible"], this.metadata["worst_primary_value_possible"]);
+        }else {
+            if (this.min_primary_val > this.rankings[i].primary_value) {
+                this.min_primary_val = Math.floor(this.rankings[i].primary_value);
+            }
+            if (this.max_primary_val < this.rankings[i].primary_value && this.rankings[i].primary_value != Number.MAX_SAFE_INTEGER) {
+                this.max_primary_val = Math.ceil(this.rankings[i].primary_value);
+            }
         }
-        if (this.max_primary_val < this.rankings[i].primary_value && this.rankings[i].primary_value != Number.MAX_SAFE_INTEGER) {
-            this.max_primary_val = Math.ceil(this.rankings[i].primary_value);
-        }
-    }
-
-    //if best & worst values are given in json, use them instead of the min and max in the data
-    if (this.metadata["best_value_possible"] != undefined && this.metadata["worst_value_possible"] != undefined) {
-        this.min_rank_val = Math.min(this.metadata["best_value_possible"], this.metadata["worst_value_possible"]);
-        this.max_rank_val = Math.max(this.metadata["best_value_possible"], this.metadata["worst_value_possible"]);
-    }
-
-    if (this.metadata["worst_primary_value_possible"] != undefined && this.metadata["best_primary_value_possible"] != undefined) {
-        this.min_primary_val = Math.min(this.metadata["best_primary_value_possible"], this.metadata["worst_primary_value_possible"]);
-        this.max_primary_val = Math.max(this.metadata["best_primary_value_possible"], this.metadata["worst_primary_value_possible"]);
     }
 
 }
@@ -298,8 +301,15 @@ RainbowGraph.prototype.buildChart = function () {
         .attr("stu_id", function (d) { return d.stu_id;})
         .style("fill", function (d) {
             rankScale = _this.max_rank_val - _this.min_rank_val + 1;
+
+            //if best-worst values aren't defined in the metadata, tkae the flag and calculate them based on min-max values
+            if (_this.metadata['best_value_possible']!= undefined)
+                best_val = _this.metadata['best_value_possible']
+            else
+                best_val = _this.metadata['higher_values_better']? _this.max_rank_val : _this.min_rank_val
+
             //determine if high score get first / last color
-            color_index = _this.val_higher_better ? _this.metadata['best_value_possible'] - d.value : d.value - _this.metadata['best_value_possible'];
+            color_index = _this.val_higher_better ? best_val - d.value : d.value - best_val;
             //scale color in case, the available colors != the available ranking, we round the rating values to the nearest integer
             color_scale = _this.colorKey[_this.inputColorScheme].length / rankScale
             color_index = Math.round(color_index * _this.colorKey[_this.inputColorScheme].length / rankScale);
