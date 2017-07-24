@@ -126,6 +126,14 @@ RainbowGraph.prototype.parseData = function () {
             if (this.max_primary_val < this.rankings[i].primary_value && this.rankings[i].primary_value != Number.MAX_SAFE_INTEGER) {
                 this.max_primary_val = Math.ceil(this.rankings[i].primary_value);
             }
+            if (this.use_sas) {
+                if (this.min_primary_val > this.rankings[i].self_assess_value) {
+                    this.min_primary_val = Math.floor(this.rankings[i].self_assess_value);
+                }
+                if (this.max_primary_val < this.rankings[i].self_assess_value) {
+                    this.max_primary_val = Math.ceil(this.rankings[i].self_assess_value);
+                }
+            }
         }
     }
 
@@ -166,10 +174,10 @@ RainbowGraph.prototype.buildChart = function () {
     // if best-worst primary values are not defined, then take the min max from the data for the Y domain
 
     //flip the Y axis
-    if (this.primary_val_higher_better)
-        y.domain([this.min_primary_val - 0.5, this.max_primary_val]);
+    if (this.primary_val_higher_better >= 0)
+        y.domain([this.min_primary_val - 0.5, this.max_primary_val + 0.5]);
     else
-        y.domain([this.max_primary_val + 0.5, this.min_primary_val]);
+        y.domain([this.max_primary_val + 0.5, this.min_primary_val - 0.5]);
 
     //If the user has not use brushing yet, this will make sure _this all the students are being shown in the main graph.
     if (this.brushCheck == false) {
@@ -484,7 +492,7 @@ RainbowGraph.prototype.buildChart = function () {
                 min = (_this.rankings[i].primary_value == 0 ? _this.rankings[i].primary_value - (0.5 * _this.primary_val_higher_better) : _this.rankings[i].primary_value);
                 //compensate the top of the bar that is moved down a little bit so the top bar looks rounded
                 min = min + (_this.primary_val_higher_better ? 0.05 : -0.05)
-                if (_this.primary_val_higher_better) {
+                if (_this.primary_val_higher_better >= 0) {
                     if (_this.rankings[i].self_assess_value > min) {
                         return (y(min) - y(_this.rankings[i].self_assess_value) )
                     } else {
