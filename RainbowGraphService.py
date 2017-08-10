@@ -11,6 +11,8 @@ import logging
 
 import sqlite3 as sqllite
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import yaml
 #from urlparse import urlparse
 
@@ -436,13 +438,16 @@ def developer():
 def configure():
     global cur, con
 
-    # generate id
-    id = uuid.uuid4();
+    if request.json is not None:
+        # generate id
+        id = uuid.uuid4();
 
-    cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
-    con.commit()
+        cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
+        con.commit()
 
-    return jsonify(url=cfg['SERVER_URL'] + "/viz/" + id.urn[9:])
+        return jsonify(url=cfg['SERVER_URL'] + "/viz/" + id.urn[9:])
+    else:
+        return jsonify(error="I couldn't parse your JSON. Please make sure that your header contains 'content-type=application/json' and your json is valid")
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
