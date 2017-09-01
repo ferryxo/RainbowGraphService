@@ -79,7 +79,7 @@ RainbowGraph.prototype.parseData = function () {
                 continue;
             this.rankings[i].push(this.jsonData[0].data[i].values[j]);
 
-            //rankings is a multidimensional array with rankings of each student
+            //rankings is a flattened multidimensional array with rankings of each student
             var rank_val = new Object();
             rank_val.value = this.jsonData[0].data[i].values[j] //all_rankings is single dimensional array with rankings of each students in order
             rank_val.primary_value = this.jsonData[0].data[i].primary_value;
@@ -242,6 +242,72 @@ RainbowGraph.prototype.buildChart = function () {
         .style("text-anchor", "end")
         .text(this.metadata['y_axis_label']);
 
+    // we need to draw the sas bar first so the top of the scorebar which is oval is drawn on top of the sas bar
+    // we need to draw the top of the sas bar after the score bars are drawn so that the shorter sas are drawn over the score bars
+    if(_this.use_sas) {
+      //self assessment bars
+      sasBodyBar = this.svg.selectAll(".sasBodyBar")
+          .data(this.rankings)
+          .enter().append("rect")
+          .attr("x", function (d, i) {
+              return _this.rankings[i].x_pos;
+              //return ((width / _this.rankings.length) * (i));
+          })
+          .attr("width", function () {
+              return width / _this.rankings.length
+          })
+          .attr("y", function (d, i) {
+              //move this below the top bar by 8px so that the top bar looks round
+              return y(_this.rankings[i].self_assess_value);
+          })
+          .attr("height", function (d, i) {
+              //set the starting value for the grey box to the primary val, unless it's 0 then start where the Y-axis starts.
+              min = (_this.rankings[i].primary_value == 0 ? _this.rankings[i].primary_value - (0.5 * _this.primary_val_higher_better) : _this.rankings[i].primary_value);
+              //compensate the top of the bar that is moved down a little bit so the top bar looks rounded
+              min = min + (_this.primary_val_higher_better ? 0.05 : -0.05)
+              if (_this.primary_val_higher_better >= 0) {
+                  if (_this.rankings[i].self_assess_value > min) {
+                      return (y(min) - y(_this.rankings[i].self_assess_value) )
+                  } else {
+                      return (0);
+                  }
+              } else {
+                  if (_this.rankings[i].self_assess_value < min) {
+                      return (y(min) - y(_this.rankings[i].self_assess_value))
+                  } else {
+                      return (0);
+                  }
+              }
+          })
+          .style("fill", "6d6d6d")
+          .style("stroke", "red")
+          .style("stroke-width", ".5")
+          .style("opacity", 0.2)
+          .style("z-index", "-1")
+          .on("mouseover", function (d) {
+
+              this.original_color = this.style.fill;
+              this.style.fill = "gray"
+              tooltip.text("self-assessement" + ":" + d.self_assess_value);
+              tooltip.style("visibility", "visible");
+
+              //TODO: highlight the reviewer
+          })
+          .on("mouseout", function (d, i) {
+              this.style.fill = this.original_color
+              return tooltip.style("visibility", "hidden");
+          })
+          .on("mousemove", function (d, i) {
+              tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px");
+          })
+
+      sasBodyBar.transition()
+          .duration(this.duration)
+          .attr("x", function (d, i) {
+              return ((width / _this.rankings.length) * (i));
+          })
+
+    }
 
     k = 0;
     allrankingIndex = 0;
@@ -259,7 +325,7 @@ RainbowGraph.prototype.buildChart = function () {
     var tooltip = d3.select("body")
         .append("div")
         .style("position", "absolute")
-        .style("z-index", "10")
+        .style("z-index", "1")
         .style("visibility", "hidden");
 
     scoreBar = this.svg.selectAll(".scoreBar")
@@ -337,7 +403,7 @@ RainbowGraph.prototype.buildChart = function () {
 
             return color;
         })
-        .style("z-index", "9")
+        .style("z-index", "0")
         .attr("rx", 8)
         .attr("ry", 8)
         .on("mouseover", function (d) {
@@ -377,7 +443,11 @@ RainbowGraph.prototype.buildChart = function () {
                     p6++;
                 }
             }
-            _this.rankings[p6].x_pos = ((width / _this.rankings.length) * (p6))
+
+            //memorize the last x position. if sas is used. do this after relocating the sas bars
+           if (!_this.use_sas)
+               _this.rankings[p6].x_pos = ((width / _this.rankings.length) * (p6))
+
             return ((width / _this.rankings.length) * (p6));
         })
 
@@ -415,8 +485,8 @@ RainbowGraph.prototype.buildChart = function () {
                     .attr("cy", .6 * window.innerHeight)
                     .attr("r", radius)
                     .attr("class", "s_circle")
-                    .style("fill", "purple")
-                    .style("stroke", "white")
+                    .style("fill", "151515")
+                    .style("stroke", "red")
                     .style("stroke-width", ".5");
             }
         }
@@ -439,8 +509,8 @@ RainbowGraph.prototype.buildChart = function () {
                             .attr("cy", .6 * window.innerHeight)
                             .attr("r", radius)
                             .attr("class", "s_circle")
-                            .style("fill", "blue")
-                            .style("stroke", "white")
+                            .style("fill", "585858")
+                            .style("stroke", "green")
                             .style("stroke-width", ".5");
                     }
                 }
@@ -468,78 +538,13 @@ RainbowGraph.prototype.buildChart = function () {
     }
 
 
-
-    //allrankingIndex=0;
-
-    //min=0;
     if(_this.use_sas) {
-        //self assessment bars
-        sasBodyBar = this.svg.selectAll(".sasBodyBar")
-            .data(this.rankings)
-            .enter().append("rect")
-            .attr("x", function (d, i) {
-                return ((width / _this.rankings.length) * (i));
-            })
-            .attr("width", function () {
-                return width / _this.rankings.length
-            })
-            .attr("y", function (d, i) {
-                //move this below the top bar by 8px so that the top bar looks round
-                return y(_this.rankings[i].self_assess_value);
-            })
-            .attr("height", function (d, i) {
-                //set the starting value for the grey box to the primary val, unless it's 0 then start where the Y-axis starts.
-                min = (_this.rankings[i].primary_value == 0 ? _this.rankings[i].primary_value - (0.5 * _this.primary_val_higher_better) : _this.rankings[i].primary_value);
-                //compensate the top of the bar that is moved down a little bit so the top bar looks rounded
-                min = min + (_this.primary_val_higher_better ? 0.05 : -0.05)
-                if (_this.primary_val_higher_better >= 0) {
-                    if (_this.rankings[i].self_assess_value > min) {
-                        return (y(min) - y(_this.rankings[i].self_assess_value) )
-                    } else {
-                        return (0);
-                    }
-                }else{
-                    if(_this.rankings[i].self_assess_value < min) {
-                        return (y(min) - y(_this.rankings[i].self_assess_value))
-                    }else{
-                        return (0);
-                    }
-                }
-            })
-            .style("fill", "6d6d6d")
-            .style("stroke", "red")
-            .style("stroke-width", ".5")
-            .style("opacity", 0.2)
-            .style("z-index", "7")
-            .on("mouseover", function (d) {
-
-                this.original_color = this.style.fill;
-                this.style.fill = "gray"
-                tooltip.text("self-assessement" + ":" + d.self_assess_value);
-                tooltip.style("visibility", "visible");
-
-                //TODO: highlight the reviewer
-            })
-            .on("mouseout", function (d, i) {
-                this.style.fill = this.original_color
-                return tooltip.style("visibility", "hidden");
-            })
-            .on("mousemove", function (d, i) {
-                tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px");
-            })
-
-        sasBodyBar.transition()
-            .duration(this.duration)
-            .attr("x", function (d, i) {
-                return ((width / _this.rankings.length) * (i));
-            })
-
-
         sasTopBar = this.svg.selectAll(".self_assess_valueTopBar")
             .data(this.rankings)
             .enter().append("rect")
             .attr("x", function (d, i) {
-                return ((width / _this.rankings.length) * (i));
+                return _this.rankings[i].x_pos;
+                //return ((width / _this.rankings.length) * (i));
             })
             .attr("width", function () {
                 return width / _this.rankings.length
@@ -557,7 +562,7 @@ RainbowGraph.prototype.buildChart = function () {
             .style("stroke", "white")
             .style("stroke-width", "1")
             .style("opacity", 1)
-            .style("z-index", "8")
+            .style("z-index", "1")
             .attr("rx", 8)
             .attr("ry", 8)
             .on("mouseover", function (d) {
@@ -579,17 +584,13 @@ RainbowGraph.prototype.buildChart = function () {
         sasTopBar.transition()
             .duration(this.duration)
             .attr("x", function (d, i) {
-                return ((width / _this.rankings.length) * (i));
+                //memorize the last x position. if sas is used. do this after relocating the sas bars
+                _this.rankings[i].x_pos = ((width / _this.rankings.length) * (i))
+                return _this.rankings[i].x_pos;
             })
 
     }
-    /*this.svg.select("g")
-        .selectAll(".tick")
-        .filter(function (d) {
 
-        })  //this is a temporary logic. If our x axis parameter is other than url, then this will change.
-        .remove();
-        */
 
 };
 
