@@ -106,8 +106,6 @@ RainbowGraph.prototype.parseData = function () {
             all_ranking_index++;
         }
 
-
-
         this.rankings[i].primary_value = this.jsonData[0].data[i].primary_value; //rank avg corresponds to primary value in json file for each student
         this.rankings[i].secondary_value = this.jsonData[0].data[i].secondary_value;
         this.rankings[i].first_name = this.jsonData[0].data[i].first_name;
@@ -566,12 +564,10 @@ RainbowGraph.prototype.buildChart = function () {
             .attr("rx", 8)
             .attr("ry", 8)
             .on("mouseover", function (d) {
-
                 this.original_color = this.style.fill;
                 this.style.fill = "gray"
                 tooltip.text("self-assessement" + ":" + d.self_assess_value);
                 tooltip.style("visibility", "visible");
-
             })
             .on("mouseout", function (d, i) {
                 this.style.fill = this.original_color
@@ -601,7 +597,6 @@ RainbowGraph.prototype.visualizeGraph = function(){
     this.parseData();
 
     this.inputColorScheme=this.metadata["color_scheme"];
-
 
     if(document.getElementById("title")!=undefined && this.jsonData[0].metadata.title !=undefined) {
         document.getElementById("title").innerHTML = this.jsonData[0].metadata.title;
