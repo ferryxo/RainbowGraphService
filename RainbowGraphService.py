@@ -454,12 +454,12 @@ def configure():
 def visualize(id):
  global cur, conn
  if request.method == 'DELETE':
-    cur.execute("DELETE FROM Config WHERE id='" + id + "'")
+    cur.execute("DELETE FROM Config WHERE id= ?", (id))
     con.commit()
 
     return "", status.HTTP_200_OK
  else:
-     cur.execute("SELECT json FROM Config WHERE id='" + id + "'")
+     cur.execute("SELECT json FROM Config WHERE id= ?", (id))
      rows = cur.fetchall()
 
      # if config == None
