@@ -437,17 +437,17 @@ def developer():
 @cross_origin()
 def configure():
     global cur, con
+    json_conf = None
 
-    if request.json is not None:
-        # generate id
+    try:
+        json_conf = request.json
         id = uuid.uuid4();
-
-        cur.execute("INSERT INTO Config (id, json ) VALUES('" + str(id) + "', '" + json.dumps(request.json) + "')")
+        json_str = json.dumps(json_conf)
+        cur.execute("INSERT INTO Config (id, json) VALUES (?, ?)", (str(id), json_str))
         con.commit()
-
         return jsonify(url=cfg['SERVER_URL'] + "/viz/" + id.urn[9:])
-    else:
-        return jsonify(error="I couldn't parse your JSON. Please make sure that your header contains 'content-type=application/json' and your json is valid")
+    except:
+        return jsonify(error="I couldn't parse your JSON. Please make sure that your header contains 'content-type=application/json' and your json is valid"), status.HTTP_400_BAD_REQUEST
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()

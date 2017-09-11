@@ -12,7 +12,7 @@
                 console.log("Sending Json");
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4) {
+                    if (xhr.readyState == 4 && xhr.status == 200 ) {
                        resp = JSON.parse(xhr.responseText);
                        document.getElementById('links').innerHTML += '<li type="square">'
                                + '<a href="' + resp.url +'" target="_frameContent" onclick="expandFrame();showHtmlCopy(\'' + resp.url + '\')">' + resp.url + '</a>'
