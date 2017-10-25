@@ -61,6 +61,9 @@ def setup_sql_lite_db():
         print "Error %s:" % e.args[0]
         sys.exit(1)
 
+#set up the DB first
+setup_sql_lite_db()
+
 @app.route('/')
 def index():
     return redirect('developer')
@@ -446,8 +449,8 @@ def configure():
         cur.execute("INSERT INTO Config (id, json) VALUES (?, ?)", (str(id), json_str))
         con.commit()
         return jsonify(url=cfg['SERVER_URL'] + "/viz/" + id.urn[9:])
-    except:
-        return jsonify(error="I couldn't parse your JSON. Please make sure that your header contains 'content-type=application/json' and your json is valid"), status.HTTP_400_BAD_REQUEST
+    except Exception as e:
+        return jsonify(error=str(e)), status.HTTP_400_BAD_REQUEST
 
 @app.route('/viz/<id>', methods=['GET', 'DELETE'])
 @cross_origin()
@@ -469,6 +472,5 @@ def visualize(id):
          return render_template('visualization.html', json_data = rows[0])
 
 if __name__ == '__main__':
-    setup_sql_lite_db()
     #app.run(host='127.0.0.1', port=3005, threaded=True)
     app.run(host='0.0.0.0', port=3005, threaded=True)

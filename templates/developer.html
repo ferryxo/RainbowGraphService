@@ -18,6 +18,9 @@
                                + '<a href="' + resp.url +'" target="_frameContent" onclick="expandFrame();showHtmlCopy(\'' + resp.url + '\')">' + resp.url + '</a>'
                                + '<button type="button" class="submit-button" onclick="deleteUrl(\'' + resp.url + '\')">delete</button>'
                                + '</li>';
+                    }else if (xhr.readyState == 2 && xhr.status != 200 ){
+                       console.log("Error", xhr.statusText);
+                       document.getElementById("links").innerHTML += '<li type="square">' + xhr.statusText + '</li>';
                     }
                 }
                 xhr.open(input_form.method, window.location.href.replace("developer", "configure") , true);
@@ -31,6 +34,9 @@
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState == 4) {
 
+                    }else if (xhr.readyState == 2 && xhr.status != 200 ){
+                       console.log("Error", xhr.statusText);
+                       document.getElementById("links").innerHTML += '<li type="square">' + xhr.statusText + '</li>';
                     }
                 }
                 line = '<li type="square"><a href="' + url +'" target="_blank">' + url + '</a><button type="button" class="submit-button" onclick="deleteUrl(\'' + url + '\')">delete</button></li>'
